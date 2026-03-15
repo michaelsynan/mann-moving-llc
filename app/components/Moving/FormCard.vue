@@ -1,0 +1,687 @@
+<script
+  setup
+  lang="ts"
+>
+type FormError = { name: string, message: string }
+
+type Address = {
+  street: string
+  apt: string
+  city: string
+  state: string
+  zip: string
+}
+
+const token = ref()
+
+const usStateOptions = [
+  { label: 'Alabama', value: 'AL' },
+  { label: 'Alaska', value: 'AK' },
+  { label: 'Arizona', value: 'AZ' },
+  { label: 'Arkansas', value: 'AR' },
+  { label: 'California', value: 'CA' },
+  { label: 'Colorado', value: 'CO' },
+  { label: 'Connecticut', value: 'CT' },
+  { label: 'Delaware', value: 'DE' },
+  { label: 'District of Columbia', value: 'DC' },
+  { label: 'Florida', value: 'FL' },
+  { label: 'Georgia', value: 'GA' },
+  { label: 'Hawaii', value: 'HI' },
+  { label: 'Idaho', value: 'ID' },
+  { label: 'Illinois', value: 'IL' },
+  { label: 'Indiana', value: 'IN' },
+  { label: 'Iowa', value: 'IA' },
+  { label: 'Kansas', value: 'KS' },
+  { label: 'Kentucky', value: 'KY' },
+  { label: 'Louisiana', value: 'LA' },
+  { label: 'Maine', value: 'ME' },
+  { label: 'Maryland', value: 'MD' },
+  { label: 'Massachusetts', value: 'MA' },
+  { label: 'Michigan', value: 'MI' },
+  { label: 'Minnesota', value: 'MN' },
+  { label: 'Mississippi', value: 'MS' },
+  { label: 'Missouri', value: 'MO' },
+  { label: 'Montana', value: 'MT' },
+  { label: 'Nebraska', value: 'NE' },
+  { label: 'Nevada', value: 'NV' },
+  { label: 'New Hampshire', value: 'NH' },
+  { label: 'New Jersey', value: 'NJ' },
+  { label: 'New Mexico', value: 'NM' },
+  { label: 'New York', value: 'NY' },
+  { label: 'North Carolina', value: 'NC' },
+  { label: 'North Dakota', value: 'ND' },
+  { label: 'Ohio', value: 'OH' },
+  { label: 'Oklahoma', value: 'OK' },
+  { label: 'Oregon', value: 'OR' },
+  { label: 'Pennsylvania', value: 'PA' },
+  { label: 'Rhode Island', value: 'RI' },
+  { label: 'South Carolina', value: 'SC' },
+  { label: 'South Dakota', value: 'SD' },
+  { label: 'Tennessee', value: 'TN' },
+  { label: 'Texas', value: 'TX' },
+  { label: 'Utah', value: 'UT' },
+  { label: 'Vermont', value: 'VT' },
+  { label: 'Virginia', value: 'VA' },
+  { label: 'Washington', value: 'WA' },
+  { label: 'West Virginia', value: 'WV' },
+  { label: 'Wisconsin', value: 'WI' },
+  { label: 'Wyoming', value: 'WY' }
+]
+
+const usStateValueSet = new Set(usStateOptions.map((o) => o.value))
+
+function emptyAddress(): Address {
+  return {
+    street: '',
+    apt: '',
+    city: '',
+    state: '',
+    zip: ''
+  }
+}
+
+const state = reactive({
+  name: '',
+  phone: '',
+  email: '',
+  pickup: emptyAddress(),
+  dropoff: emptyAddress(),
+  additionalStops: [] as Address[],
+  largeItems: [] as string[],
+  approxBoxCount: undefined as number | undefined,
+  over250lbsDetails: '',
+  notes: ''
+})
+
+function normalizePhone(input: string) {
+  const digitsOnly = input.replace(/\D/g, '')
+  if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+    return digitsOnly.slice(1)
+  }
+
+  return digitsOnly
+}
+
+function isValidPhone(input: string) {
+  return normalizePhone(input).length === 10
+}
+
+function isValidEmail(input: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.trim())
+}
+
+const stopDraft = reactive(emptyAddress())
+const largeItemDraft = ref('')
+const showStopDraft = ref(false)
+
+const canAddStop = computed(() => {
+  return Boolean(stopDraft.street.trim())
+    && Boolean(stopDraft.city.trim())
+    && usStateValueSet.has(stopDraft.state)
+    && Boolean(stopDraft.zip.trim())
+})
+
+function addStopFromDraft() {
+  if (!canAddStop.value) {
+    return
+  }
+
+  state.additionalStops.push({
+    street: stopDraft.street.trim(),
+    apt: stopDraft.apt.trim(),
+    city: stopDraft.city.trim(),
+    state: stopDraft.state,
+    zip: stopDraft.zip.trim()
+  })
+
+  Object.assign(stopDraft, emptyAddress())
+  showStopDraft.value = false
+}
+
+function openStopDraft() {
+  showStopDraft.value = true
+}
+
+function cancelStopDraft() {
+  Object.assign(stopDraft, emptyAddress())
+  showStopDraft.value = false
+}
+
+function removeStop(index: number) {
+  state.additionalStops.splice(index, 1)
+}
+
+function addLargeItemFromDraft() {
+  const next = largeItemDraft.value.trim()
+  if (!next) {
+    return
+  }
+
+  state.largeItems.push(next)
+  largeItemDraft.value = ''
+}
+
+function removeLargeItem(index: number) {
+  state.largeItems.splice(index, 1)
+}
+
+function formatAddressSummary(address: Address) {
+  const streetLine = address.apt?.trim() ? `${address.street}, ${address.apt}` : address.street
+  const cityLine = `${address.city}, ${address.state} ${address.zip}`
+  return [streetLine, cityLine]
+}
+
+function validate(formState: typeof state) {
+  const errors: FormError[] = []
+
+  if (!formState.name.trim()) {
+    errors.push({ name: 'name', message: 'Name is required' })
+  }
+
+  if (!isValidPhone(formState.phone)) {
+    errors.push({ name: 'phone', message: 'Enter a valid phone number' })
+  }
+
+  if (!isValidEmail(formState.email)) {
+    errors.push({ name: 'email', message: 'Enter a valid email' })
+  }
+
+  const validateState = (path: string, value: string) => {
+    if (!usStateValueSet.has(value)) {
+      errors.push({ name: path, message: 'Select a state' })
+    }
+  }
+
+  validateState('pickup.state', formState.pickup.state)
+  validateState('dropoff.state', formState.dropoff.state)
+
+  for (let index = 0; index < formState.additionalStops.length; index++) {
+    validateState(`additionalStops.${index}.state`, formState.additionalStops[index]?.state ?? '')
+  }
+
+  return errors
+}
+
+function onSubmit() {
+  // Placeholder: wire up to email/CRM later.
+  // eslint-disable-next-line no-console
+  console.log('Moving form submit', { ...state })
+}
+</script>
+
+<template>
+  <UCard class="mx-auto w-full max-w-2xl bg-primary/5 dark:bg-primary/10">
+    <template #header>
+      <div class="space-y-1">
+        <p class="text-sm text-muted">Request moving help</p>
+        <h2
+          class="text-[clamp(1.35rem,2.8vw,1.9rem)] font-black leading-tight tracking-tight text-highlighted uppercase whitespace-nowrap truncate"
+        >Tell us about your move</h2>
+      </div>
+    </template>
+
+    <UForm
+      :state="state"
+      :validate="validate"
+      @submit="onSubmit"
+    >
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <UFormField
+          label="Name"
+          name="name"
+          size="lg"
+        >
+          <UInput
+            v-model="state.name"
+            placeholder="Your name"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Phone"
+          name="phone"
+          size="lg"
+        >
+          <UInput
+            v-model="state.phone"
+            placeholder="(555) 123-4567"
+            class="w-full"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Email"
+          name="email"
+          size="lg"
+          class="sm:col-span-2"
+        >
+          <UInput
+            v-model="state.email"
+            placeholder="you@example.com"
+            class="w-full"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+          />
+        </UFormField>
+
+        <div class="sm:col-span-2">
+          <USeparator />
+        </div>
+
+        <div class="sm:col-span-2">
+          <p class="text-sm font-semibold text-highlighted">Pick up address</p>
+        </div>
+
+        <UFormField
+          label="Street address"
+          name="pickup.street"
+          class="sm:col-span-2"
+          size="lg"
+        >
+          <UInput
+            v-model="state.pickup.street"
+            class="w-full"
+            placeholder="Street address"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Apt / Unit"
+          name="pickup.apt"
+          size="lg"
+        >
+          <UInput
+            v-model="state.pickup.apt"
+            class="w-full"
+            placeholder="Apt / Unit (optional)"
+          />
+        </UFormField>
+
+        <UFormField
+          label="City"
+          name="pickup.city"
+          size="lg"
+        >
+          <UInput
+            v-model="state.pickup.city"
+            class="w-full"
+            placeholder="City"
+          />
+        </UFormField>
+
+        <UFormField
+          label="State"
+          name="pickup.state"
+          size="lg"
+        >
+          <USelect
+            v-model="state.pickup.state"
+            :items="usStateOptions"
+            placeholder="Select state"
+            class="w-full"
+            size="lg"
+          />
+        </UFormField>
+
+        <UFormField
+          label="ZIP"
+          name="pickup.zip"
+          size="lg"
+        >
+          <UInput
+            v-model="state.pickup.zip"
+            class="w-full"
+            placeholder="ZIP"
+            inputmode="numeric"
+            autocomplete="postal-code"
+          />
+        </UFormField>
+
+        <div class="sm:col-span-2">
+          <USeparator />
+        </div>
+
+        <div class="sm:col-span-2">
+          <p class="text-sm font-semibold text-highlighted">Drop off address</p>
+        </div>
+
+        <UFormField
+          label="Street address"
+          name="dropoff.street"
+          class="sm:col-span-2"
+          size="lg"
+        >
+          <UInput
+            v-model="state.dropoff.street"
+            class="w-full"
+            placeholder="Street address"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Apt / Unit"
+          name="dropoff.apt"
+          size="lg"
+        >
+          <UInput
+            v-model="state.dropoff.apt"
+            class="w-full"
+            placeholder="Apt / Unit (optional)"
+          />
+        </UFormField>
+
+        <UFormField
+          label="City"
+          name="dropoff.city"
+          size="lg"
+        >
+          <UInput
+            v-model="state.dropoff.city"
+            class="w-full"
+            placeholder="City"
+          />
+        </UFormField>
+
+        <UFormField
+          label="State"
+          name="dropoff.state"
+          size="lg"
+        >
+          <USelect
+            v-model="state.dropoff.state"
+            :items="usStateOptions"
+            placeholder="Select state"
+            class="w-full"
+            size="lg"
+          />
+        </UFormField>
+
+        <UFormField
+          label="ZIP"
+          name="dropoff.zip"
+          size="lg"
+        >
+          <UInput
+            v-model="state.dropoff.zip"
+            class="w-full"
+            placeholder="ZIP"
+            inputmode="numeric"
+            autocomplete="postal-code"
+          />
+        </UFormField>
+
+        <div class="sm:col-span-2">
+          <div class="flex items-center justify-between gap-4">
+            <p class="text-sm font-semibold text-highlighted">Additional stops</p>
+
+            <UButton
+              type="button"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              icon="i-lucide-plus"
+              @click="openStopDraft"
+            >Add stop</UButton>
+          </div>
+        </div>
+
+        <div
+          v-if="showStopDraft"
+          class="sm:col-span-2 rounded-lg border border-default bg-elevated/30 p-4"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <p class="text-sm font-semibold text-highlighted">Add a stop</p>
+
+            <UButton
+              type="button"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              icon="i-lucide-x"
+              @click="cancelStopDraft"
+            >Cancel</UButton>
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <UFormField
+              label="Street address"
+              name="stopDraft.street"
+              class="sm:col-span-2"
+              size="lg"
+            >
+              <UInput
+                v-model="stopDraft.street"
+                class="w-full"
+                placeholder="Street address"
+              />
+            </UFormField>
+
+            <UFormField
+              label="Apt / Unit"
+              name="stopDraft.apt"
+              size="lg"
+            >
+              <UInput
+                v-model="stopDraft.apt"
+                class="w-full"
+                placeholder="Apt / Unit (optional)"
+              />
+            </UFormField>
+
+            <UFormField
+              label="City"
+              name="stopDraft.city"
+              size="lg"
+            >
+              <UInput
+                v-model="stopDraft.city"
+                class="w-full"
+                placeholder="City"
+              />
+            </UFormField>
+
+            <UFormField
+              label="State"
+              name="stopDraft.state"
+              size="lg"
+            >
+              <USelect
+                v-model="stopDraft.state"
+                :items="usStateOptions"
+                placeholder="Select state"
+                class="w-full"
+                size="lg"
+              />
+            </UFormField>
+
+            <UFormField
+              label="ZIP"
+              name="stopDraft.zip"
+              size="lg"
+            >
+              <UInput
+                v-model="stopDraft.zip"
+                class="w-full"
+                placeholder="ZIP"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                @keydown.enter.prevent="addStopFromDraft"
+              />
+            </UFormField>
+
+            <div class="sm:col-span-2 flex items-center justify-end gap-3">
+              <UButton
+                type="button"
+                variant="ghost"
+                color="neutral"
+                size="lg"
+                @click="cancelStopDraft"
+              >Cancel</UButton>
+
+              <UButton
+                type="button"
+                color="primary"
+                variant="solid"
+                size="lg"
+                icon="i-lucide-plus"
+                :disabled="!canAddStop"
+                @click="addStopFromDraft"
+              >Add stop</UButton>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="state.additionalStops.length"
+          class="sm:col-span-2 space-y-3"
+        >
+          <div
+            v-for="(stop, index) in state.additionalStops"
+            :key="index"
+            class="flex items-start justify-between gap-4 rounded-lg border border-default bg-elevated/20 p-4"
+          >
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-highlighted">Stop {{ index + 1 }}</p>
+              <p class="mt-1 text-sm text-muted truncate">{{ formatAddressSummary(stop)[0] }}</p>
+              <p class="text-sm text-muted truncate">{{ formatAddressSummary(stop)[1] }}</p>
+            </div>
+
+            <UButton
+              type="button"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              icon="i-lucide-x"
+              aria-label="Remove stop"
+              @click="removeStop(index)"
+            />
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <USeparator />
+        </div>
+
+        <div class="sm:col-span-2">
+          <div class="flex items-center justify-between gap-4">
+            <p class="text-sm font-semibold text-highlighted">Large items</p>
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <UInput
+              v-model="largeItemDraft"
+              placeholder="Type an item and press Enter (e.g. sofa, refrigerator, treadmill)"
+              class="w-full"
+              size="lg"
+              @keydown.enter.prevent="addLargeItemFromDraft"
+            />
+
+            <UButton
+              type="button"
+              color="primary"
+              variant="solid"
+              size="lg"
+              icon="i-lucide-plus"
+              :disabled="!largeItemDraft.trim()"
+              class="sm:w-auto"
+              @click="addLargeItemFromDraft"
+            >Add</UButton>
+          </div>
+
+          <div
+            v-if="state.largeItems.length"
+            class="mt-4 space-y-2"
+          >
+            <div
+              v-for="(item, index) in state.largeItems"
+              :key="`${item}-${index}`"
+              class="flex items-center justify-between gap-4 rounded-lg border border-default bg-elevated/20 px-4 py-3"
+            >
+              <p class="min-w-0 truncate text-sm text-highlighted">{{ item }}</p>
+
+              <UButton
+                type="button"
+                variant="ghost"
+                color="neutral"
+                size="sm"
+                icon="i-lucide-x"
+                aria-label="Remove item"
+                @click="removeLargeItem(index)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <USeparator />
+        </div>
+
+        <UFormField
+          label="Approx. box count"
+          name="approxBoxCount"
+          class="sm:col-span-2"
+          size="lg"
+        >
+          <UInput
+            v-model.number="state.approxBoxCount"
+            type="number"
+            min="0"
+            placeholder="0"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Anything over 250 pounds?"
+          name="over250lbsDetails"
+          class="sm:col-span-2"
+          size="lg"
+        >
+          <UTextarea
+            v-model="state.over250lbsDetails"
+            :rows="4"
+            placeholder="List anything over 250 lbs (e.g. safe, piano, commercial equipment)"
+            class="w-full"
+          />
+        </UFormField>
+
+        <div class="sm:col-span-2">
+          <USeparator />
+        </div>
+
+        <UFormField
+          label="Notes"
+          name="notes"
+          class="sm:col-span-2"
+          size="lg"
+        >
+          <UTextarea
+            v-model="state.notes"
+            :rows="4"
+            placeholder="Anything else we should know? (stairs, parking, timing, access codes, fragile items, etc.)"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
+      <NuxtTurnstile
+        v-model="token"
+        class="pt-6"
+      />
+      <div class="mt-8 flex items-center justify-center">
+        <UButton
+          type="submit"
+          color="primary"
+          size="xl"
+          class="w-full sm:w-auto"
+        >Request a quote</UButton>
+      </div>
+    </UForm>
+  </UCard>
+</template>

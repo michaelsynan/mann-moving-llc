@@ -30,6 +30,7 @@ export default defineNuxtConfig({
 
   devtools: {
     enabled: true,
+    clientAllowed: true, // Attempt to auto-accept DevTools client connections
   },
 
   css: ["~/assets/css/main.css"],
@@ -38,7 +39,9 @@ export default defineNuxtConfig({
     "/": { prerender: true },
   },
 
-  compatibilityDate: "2025-01-15",
+  
+
+  
 
   eslint: {
     config: {

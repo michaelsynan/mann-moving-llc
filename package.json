@@ -14,18 +14,21 @@
     "@iconify-json/lucide": "^1.2.96",
     "@iconify-json/simple-icons": "^1.2.72",
     "@nuxt/fonts": "0.14.0",
-    "@nuxt/scripts": "1.0.0-beta.24",
+    "@nuxt/scripts": "0.13.2",
     "@nuxt/ui": "^4.5.1",
     "@nuxtjs/turnstile": "1.1.2",
     "nuxt": "^4.3.1",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.1",
+    "vue": "^3.5.31",
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@types/cloudflare-turnstile": "^0.2.2",
     "eslint": "^10.0.3",
     "typescript": "^5.9.3",
-    "vue-tsc": "^3.2.5"
+    "vue-tsc": "^3.2.5",
+    "@nuxt/devtools": "latest"
   },
   "packageManager": "pnpm@10.30.3"
 }

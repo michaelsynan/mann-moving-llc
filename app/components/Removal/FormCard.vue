@@ -133,24 +133,24 @@ type WorkerResizeRequest = {
 
 type WorkerResizeResponse =
   | {
-      id: string
-      ok: true
-      result: {
-        action: WorkerResizeAction
-        srcWidth: number
-        srcHeight: number
-        dstWidth: number
-        dstHeight: number
-        outName: string
-        outType: string
-        outBuffer: ArrayBuffer
-      }
+    id: string
+    ok: true
+    result: {
+      action: WorkerResizeAction
+      srcWidth: number
+      srcHeight: number
+      dstWidth: number
+      dstHeight: number
+      outName: string
+      outType: string
+      outBuffer: ArrayBuffer
     }
+  }
   | {
-      id: string
-      ok: false
-      error: string
-    }
+    id: string
+    ok: false
+    error: string
+  }
 
 const resizeWorker = ref<Worker | null>(null)
 const resizeWorkerDisabled = ref(false)
@@ -434,7 +434,7 @@ async function resizeImageFileMainThread(
     }
 
     // Help reduce aliasing when downscaling.
-    ;(ctx as CanvasRenderingContext2D).imageSmoothingEnabled = true
+    ; (ctx as CanvasRenderingContext2D).imageSmoothingEnabled = true
 
     ctx.drawImage(bitmap, 0, 0, dstW, dstH)
 
@@ -869,7 +869,8 @@ function validate(formState: typeof state) {
                   {{ file.name }}
                 </p>
                 <p class="mt-1 text-xs text-muted">
-                  Selected: {{ formatBytes(file.size) }} · Will upload as: {{ formatBytes(getUploadFile(file).size) }} · {{ getResizeSummary(file) }}
+                  Selected: {{ formatBytes(file.size) }} · Will upload as: {{ formatBytes(getUploadFile(file).size) }} ·
+                  {{ getResizeSummary(file) }}
                 </p>
 
                 <p class="mt-1 text-xs text-muted">

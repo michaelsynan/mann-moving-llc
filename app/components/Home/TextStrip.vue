@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full bg-inverted text-inverted px-6 py-8 sm:px-10 sm:py-10 overflow-hidden">
+  <div class="w-full bg-neutral-950 text-white px-6 py-8 sm:px-10 sm:py-10 overflow-hidden">
     <div class="marquee">
       <div class="marquee__inner">
         <div class="marquee__track">

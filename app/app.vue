@@ -1,13 +1,18 @@
 <script setup>
 useHead({
   meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+    { name: 'color-scheme', content: 'light' }
   ],
   link: [
     { rel: 'icon', href: '/favicon.ico' }
   ],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'en',
+    class: 'light'
+  },
+  bodyAttrs: {
+    class: 'light'
   }
 })
 
@@ -47,12 +52,16 @@ useSeoMeta({
         <div class="flex items-center gap-2 self-center">
           <NuxtLink
             to="/"
-            class="flex items-center"
+            class="flex items-center gap-3"
+            aria-label="Mann Muscles LLC"
           >
-            <AppLogo class="w-auto shrink-0" />
+            <span class="h-8">
+              <AppLogo class="h-full" />
+            </span>
+            <span class="font-semibold tracking-tight text-highlighted">
+              Mann Muscles LLC
+            </span>
           </NuxtLink>
-
-          <!-- <TemplateMenu /> -->
         </div>
       </template>
 
@@ -72,11 +81,10 @@ useSeoMeta({
               aria-label="Call Us"
               color="primary"
               variant="solid"
+              size="xl"
             >
               <span class="hidden sm:inline">Call Us</span>
             </UButton>
-
-            <UColorModeButton />
           </div>
         </div>
       </template>

@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     "@nuxt/fonts",
     "@nuxt/scripts",
     "@nuxtjs/turnstile",
+    "@nuxtjs/color-mode",
   ],
 
   app: {
@@ -28,9 +29,24 @@ export default defineNuxtConfig({
     },
   },
 
+  ui: {
+    // Disable Nuxt UI's Color Mode integration.
+    // We'll configure @nuxtjs/color-mode directly below to force light mode.
+    colorMode: false,
+  },
+
+  // Force light mode (no system detection, no dark).
+  // https://color-mode.nuxtjs.org/usage/configuration
+  colorMode: {
+    preference: "light",
+    fallback: "light",
+    // Use a custom key to avoid any previously persisted dark preference.
+    storageKey: "mm-color-mode",
+    classSuffix: "",
+  },
+
   devtools: {
     enabled: true,
-    clientAllowed: true, // Attempt to auto-accept DevTools client connections
   },
 
   css: ["~/assets/css/main.css"],
@@ -38,10 +54,6 @@ export default defineNuxtConfig({
   routeRules: {
     "/": { prerender: true },
   },
-
-  
-
-  
 
   eslint: {
     config: {

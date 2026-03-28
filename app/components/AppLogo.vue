@@ -1,3 +1,3 @@
 <template>
-  <div class="font-bold flex items-center leading-none">MANN MUSCLES LLC</div>
+  <img src="/content/logo.png" alt="Mann Muscles LLC Logo" class="h-full w-auto" />
 </template>

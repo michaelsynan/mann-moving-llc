@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "@nuxtjs/turnstile",
     "@nuxtjs/color-mode",
+    "@nuxtjs/supabase",
   ],
 
   app: {
@@ -43,6 +44,16 @@ export default defineNuxtConfig({
     // Use a custom key to avoid any previously persisted dark preference.
     storageKey: "mm-color-mode",
     classSuffix: "",
+  },
+
+  // Supabase auth route guarding
+  supabase: {
+    redirectOptions: {
+      // Guard /command and any future sub-pages under it.
+      include: ["/command(/*)?"],
+      // Redirect unauthenticated users here.
+      login: "/login",
+    },
   },
 
   devtools: {

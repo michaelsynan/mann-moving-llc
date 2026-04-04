@@ -31,6 +31,34 @@ const navigationItems = [
   }
 ]
 
+const footerSocials = [
+  {
+    label: 'Facebook',
+    icon: 'i-mdi-facebook',
+    href: 'https://www.facebook.com/'
+  },
+  {
+    label: 'TikTok',
+    icon: 'i-simple-icons-tiktok',
+    href: 'https://www.tiktok.com/'
+  },
+  {
+    label: 'Yelp',
+    icon: 'i-mdi-yelp',
+    href: 'https://www.yelp.com/'
+  },
+  {
+    label: 'Google',
+    icon: 'i-mdi-google',
+    href: 'https://www.google.com/'
+  },
+  {
+    label: 'Instagram',
+    icon: 'i-mdi-instagram',
+    href: 'https://www.instagram.com/'
+  }
+]
+
 const title = 'Mann Muscles LLC - Junk Removal & Moving Services'
 const description = 'We will cut your junk removal costs with Mann Muscles LLC. We buy your junk and keep it out of the landfill. Our team makes it stress-free.'
 
@@ -104,22 +132,36 @@ useSeoMeta({
     </UMain>
 
     <UFooter class="border-t border-default bg-accented">
-      <template #left>
-        <p class="text-sm text-muted">
-          Built by Formwork Studios • © {{ new Date().getFullYear() }}
-        </p>
-      </template>
+      <div class="w-full py-2">
+        <div class="flex justify-center border-b border-default pb-4 mb-4">
+          <img
+            src="/content/NumberClassicPNGTransparent.png"
+            alt="Mann Muscles contact number"
+            class="h-14 sm:h-16 w-auto"
+            loading="lazy"
+            decoding="async"
+          >
+        </div>
 
-      <template #right>
-        <UButton
-          to="https://www.facebook.com/MannMuscles/"
-          target="_blank"
-          icon="i-simple-icons-facebook"
-          aria-label="Facebook"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
+        <div class="mb-4 flex items-center justify-center gap-2">
+          <UButton
+            v-for="social in footerSocials"
+            :key="social.label"
+            :to="social.href"
+            target="_blank"
+            :icon="social.icon"
+            :aria-label="social.label"
+            color="neutral"
+            variant="ghost"
+          />
+        </div>
+
+        <div class="text-center">
+          <p class="text-sm text-muted">
+            © {{ new Date().getFullYear() }} Mann Muscles LLC
+          </p>
+        </div>
+      </div>
     </UFooter>
   </UApp>
 </template>

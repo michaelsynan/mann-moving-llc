@@ -1,19 +1,40 @@
-<script setup lang="ts">
+<script
+  setup
+  lang="ts"
+>
+const videos = [
+  '/videos/changing_web.mp4',
+  '/videos/cleanout_web.mp4',
+  // '/videos/JunkRemovalNEW30sec_web.mp4',
+  '/videos/vid_web.mp4'
+]
+
+// Temporarily disabled poster image usage per request.
+// const poster = '/content/ProfilePic1200x1200PNGTransparent.png'
 </script>
 
 <template>
-  <div class="mx-auto max-w-4xl">
-    <div class="relative overflow-hidden rounded-lg border border-default bg-muted">
-      <div class="flex justify-center">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div class="mb-12 text-center">
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-highlighted">
+        Check out these before and afters
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div
+        v-for="videoSrc in videos"
+        :key="videoSrc"
+        class="overflow-hidden rounded-lg border border-default bg-muted"
+      >
         <video
-          class="block max-h-[70vh] w-auto max-w-full h-auto"
+          class="block w-full h-auto"
           controls
           playsinline
           preload="metadata"
-          poster="/content/CleanoutAD1%262photo.webp"
         >
           <source
-            src="/content/JunkRemovalNEW30sec_web.mp4"
+            :src="videoSrc"
             type="video/mp4"
           >
           Your browser does not support the video tag.

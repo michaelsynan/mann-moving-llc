@@ -13,6 +13,41 @@ type Address = {
 }
 
 const token = ref()
+const supabase = useSupabaseClient()
+const isSubmitting = ref(false)
+const submitError = ref<string | null>(null)
+const submitSuccess = ref(false)
+
+const DUPLICATE_SUBMIT_TTL_SECONDS = 60 * 60 * 24 * 14
+const DUPLICATE_STORAGE_KEY = 'mm-moving-submit-at'
+const duplicateSubmitMessage = "It looks like you've already submitted some information. Please contact us to discuss"
+
+const movingSubmittedAt = useCookie<string | undefined>(DUPLICATE_STORAGE_KEY, {
+  maxAge: DUPLICATE_SUBMIT_TTL_SECONDS,
+  sameSite: 'lax'
+})
+
+const hasRecentSubmission = computed(() => Boolean(movingSubmittedAt.value))
+
+function markMovingSubmission() {
+  const timestamp = new Date().toISOString()
+  movingSubmittedAt.value = timestamp
+
+  if (import.meta.client) {
+    localStorage.setItem(DUPLICATE_STORAGE_KEY, timestamp)
+  }
+}
+
+onMounted(() => {
+  if (!import.meta.client) {
+    return
+  }
+
+  const localMarker = localStorage.getItem(DUPLICATE_STORAGE_KEY)
+  if (localMarker && !movingSubmittedAt.value) {
+    movingSubmittedAt.value = localMarker
+  }
+})
 
 const usStateOptions = [
   { label: 'Alabama', value: 'AL' },
@@ -202,10 +237,94 @@ function validate(formState: typeof state) {
   return errors
 }
 
-function onSubmit() {
-  // Placeholder: wire up to email/CRM later.
-  // eslint-disable-next-line no-console
-  console.log('Moving form submit', { ...state })
+async function onSubmit() {
+  submitError.value = null
+  submitSuccess.value = false
+
+  if (hasRecentSubmission.value) {
+    submitError.value = duplicateSubmitMessage
+    return
+  }
+
+  if (isSubmitting.value) {
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    if (!token.value) {
+      submitError.value = 'Please complete the Turnstile challenge.'
+      return
+    }
+
+    const verification = await $fetch<{ success: boolean, errorCodes?: string[] }>('/api/turnstile-verify', {
+      method: 'POST',
+      body: { token: token.value }
+    })
+
+    if (!verification?.success) {
+      submitError.value = verification?.errorCodes?.length
+        ? `Turnstile verification failed: ${verification.errorCodes.join(', ')}`
+        : 'Turnstile verification failed. Please try again.'
+      return
+    }
+
+    const addressFrom = formatAddressSummary(state.pickup).join(', ')
+    const addressTo = formatAddressSummary(state.dropoff).join(', ')
+
+    const notes = [
+      `Name: ${state.name}`,
+      `Phone: ${state.phone}`,
+      `Email: ${state.email}`,
+      `Additional stops: ${state.additionalStops.length
+        ? state.additionalStops.map((s) => formatAddressSummary(s).join(', ')).join(' | ')
+        : 'None'}`,
+      `Large items: ${state.largeItems.length ? state.largeItems.join(', ') : 'None'}`,
+      `Approx box count: ${state.approxBoxCount ?? 'N/A'}`,
+      `Over 250 lbs details: ${state.over250lbsDetails || 'N/A'}`,
+      `Notes: ${state.notes || 'N/A'}`
+    ].join('\n')
+
+    const { error } = await supabase
+      .from('jobs')
+      .insert({
+        job_type: 'moving',
+        address_from: addressFrom,
+        address_to: addressTo,
+        scheduled_date: null,
+        status: 'new',
+        notes
+      })
+
+    if (error) {
+      throw error
+    }
+
+    markMovingSubmission()
+    submitSuccess.value = true
+
+    state.name = ''
+    state.phone = ''
+    state.email = ''
+    state.pickup = emptyAddress()
+    state.dropoff = emptyAddress()
+    state.additionalStops = []
+    state.largeItems = []
+    state.approxBoxCount = undefined
+    state.over250lbsDetails = ''
+    state.notes = ''
+
+    Object.assign(stopDraft, emptyAddress())
+    largeItemDraft.value = ''
+    showStopDraft.value = false
+
+    token.value = undefined
+  } catch (err) {
+    submitError.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -225,6 +344,36 @@ function onSubmit() {
       :validate="validate"
       @submit="onSubmit"
     >
+      <UAlert
+        v-if="submitSuccess"
+        color="success"
+        variant="subtle"
+        class="mb-4"
+        title="Request submitted"
+        description="Thanks! Your moving request has been submitted. We'll reach out soon."
+        icon="i-lucide-check"
+      />
+
+      <UAlert
+        v-if="submitError"
+        color="error"
+        variant="subtle"
+        class="mb-4"
+        title="Could not submit request"
+        :description="submitError"
+        icon="i-lucide-alert-triangle"
+      />
+
+      <UAlert
+        v-if="hasRecentSubmission && !submitSuccess"
+        color="warning"
+        variant="subtle"
+        class="mb-4"
+        title="Already submitted"
+        :description="duplicateSubmitMessage"
+        icon="i-lucide-info"
+      />
+
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UFormField
           label="Name"
@@ -679,6 +828,8 @@ function onSubmit() {
           type="submit"
           color="primary"
           size="xl"
+          :loading="isSubmitting"
+          :disabled="isSubmitting || hasRecentSubmission"
           class="w-full sm:w-auto"
         >Request a quote</UButton>
       </div>

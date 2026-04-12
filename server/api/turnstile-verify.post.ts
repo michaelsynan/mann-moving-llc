@@ -1,8 +1,4 @@
-import {
-  defineEventHandler,
-  getRequestHeader,
-  readBody,
-} from "h3";
+import { defineEventHandler, getRequestHeader, readBody } from "h3";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
@@ -37,7 +33,7 @@ export default defineEventHandler(async (event) => {
     form.set("remoteip", remoteIp);
   }
 
-  let result: { success: boolean; "error-codes"?: string[] } | null = null
+  let result: { success: boolean; "error-codes"?: string[] } | null = null;
   try {
     result = await $fetch<{ success: boolean; "error-codes"?: string[] }>(
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
@@ -48,12 +44,12 @@ export default defineEventHandler(async (event) => {
         },
         body: form,
       },
-    )
+    );
   } catch {
     return {
       success: false,
       errorCodes: ["turnstile-verify-request-failed"],
-    }
+    };
   }
 
   return {

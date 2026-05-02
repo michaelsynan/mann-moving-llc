@@ -41,5 +41,18 @@ const videos = [
         </video>
       </div>
     </div>
+
+    <div class="mt-16 flex justify-center">
+      <UButton
+        label="Leave a Review"
+        to="https://www.facebook.com/MannMuscles/reviews/?id=100063722133622&sk=reviews"
+        target="_blank"
+        rel="noopener noreferrer"
+        trailing-icon="i-lucide-arrow-right"
+        color="primary"
+        size="xl"
+        variant="solid"
+      />
+    </div>
   </div>
 </template>

@@ -1,0 +1,120 @@
+export type Review = {
+  name: string;
+  stars: number | "Recommends";
+  date: string;
+  review: string;
+};
+
+export const reviews: Review[] = [
+  {
+    name: "Faith G.",
+    stars: 5,
+    date: "5/14/25",
+    review:
+      "Very responsive and accommodating to our needs. Thank you! I'm thrilled to be able to work with a team of dedicated professionals. Can't wait till moving day. Thank you for walking me step by step on how to prepare so moving day goes smoothly.",
+  }, // [1]
+  {
+    name: "Lois E.",
+    stars: 5,
+    date: "7/23/23",
+    review:
+      'In a industry full of scam artists. This company is true to its word. Stand up and honest owner as well as respectful employees. Can\'t say enough good things about this company! Thank you Matthew and Joshua you really "moved" us !',
+  }, // [2]
+  {
+    name: "Christine G.",
+    stars: 5,
+    date: "6/14/21",
+    review:
+      "I needed my deck demolished for an FHA appraisal, and a friend recommended Mann Muscles because she heard good things about them. The group arrived right on time, advised me of what they would be doing, and worked diligently until the job was completed. They did an amazing job for an incredible price. I would definitely recommend these guys to anyone who has a tear down, clean out or other job that is just too much for you.",
+  }, // [3]
+  {
+    name: "Descyn P.",
+    stars: 5,
+    date: "9/18/18",
+    review:
+      "These men are very hard working, and great at putting anything together. My son and I loved their professionalism and great sense of humor. My boyfriend couldn't believe how great everything turned out. We are so thankful to have been referred to Matthew's company.",
+  }, // [4]
+  {
+    name: "Karyl W.",
+    stars: 5,
+    date: "6/21/18",
+    review:
+      "Matt and his crew are the best. We have a commercial furniture distribution company that relies heavily on professional movers. We work in all 50 states so we work with a lot of movers. Matt has been a treasure in the PA / NY area. He has helped us on numerous, large scale jobs that included unloading and offloading hundreds of pieces of furniture; many requiring on-site assembly. We are in our second year of working with Matt and would recommend him highly for commercial or residential moving jobs.",
+  }, // [5]
+  {
+    name: "Madison Cheers",
+    stars: "Recommends",
+    date: "Dec 18, 2024",
+    review:
+      "MANN MUSCLES have you on Muscle!!! 💪 they were in and out with a side of stand up comedy best moving experience ever! ~ Madison & Mike",
+  }, // [6]
+  {
+    name: "Kristin Caudullo Martelli",
+    stars: "Recommends",
+    date: "Sep 10, 2024",
+    review:
+      "These guys are AWESOME! Professional, courteous, super amazing job well done with smiles on their faces. I would give them 10 stars. HIGHLY recommend.",
+  }, // [6]
+  {
+    name: "Michele Kaminski",
+    stars: "Recommends",
+    date: "May 28, 2024",
+    review:
+      "I have used Mann Muscles three times. They are incredible courteous, professional, best customer service. Can't recommend them enough. If moving thet are your go to movers !!!",
+  }, // [6]
+  {
+    name: "Jacob W Rosenstein",
+    stars: "Recommends",
+    date: "Dec 27, 2023",
+    review: "Recommends Mann Muscles LLC.",
+  }, // [6]
+  {
+    name: "Deborah Shope",
+    stars: 5,
+    date: "2026-03-22",
+    review:
+      "Very dependable and hard working group of ppl. I highly suggest them for any move. They are great problem solvers and are dedicated to fulfilling any need you might have.",
+  }, // [7]
+  {
+    name: "Danielle Angeloni",
+    stars: 5,
+    date: "2026-03-22",
+    review:
+      "Matt and his crew are nothing short of terrific. As a local Realtor in his area, I recommend him highly to my sellers for home/garage/shed cleanouts and he hits a home run for them every time. Reasonable and actually (gasp) shows up when he says he will....imagine that! Hit Matt up when you need moving muscle. You won't be sorry.",
+  }, // [7]
+  {
+    name: "Deanna A.",
+    stars: 5,
+    date: "03/19/2026",
+    review:
+      "They showed up in record time when the originally scheduled service faild to show up. They were fast and packed everything securely. Only one plastic tub had it's top cracked during moving and no furniture was damaged at all.",
+  }, // [8]
+  {
+    name: "Jacob W.",
+    stars: 5,
+    date: "02/23/2026",
+    review:
+      "Mann Muscles was fantastic to work with. Matt was immediately responsive in coordinating and the two movers who came were professional, attentive, and went out of their way to be of help and make it a smooth process. I couldn't recommend them highly enough!",
+  }, // [8]
+  {
+    name: "Kriszta S.",
+    stars: 5,
+    date: "07/30/2025",
+    review:
+      "Super professionals. It was a very pleasant van-unloading experience.",
+  }, // [9]
+  {
+    name: "Tina S.",
+    stars: 5,
+    date: "07/29/2025",
+    review:
+      "Carl and Chase were great!! Nonstop, very professional. Not ine item was damaged during load, transport and unload. Highly recommended!!",
+  }, // [9]
+  {
+    name: "Carla R.",
+    stars: 5,
+    date: "07/02/2025",
+    review:
+      "Mann Muscles made my move stress free and were so helpful when I needed to add additional hoursnti my job. I would highly recommend this company to anyone who needs fast friendly professional affordable moving services!!! I'd give them 10 stars but it only allowed me to give them 5!!!",
+  }, // [9]
+];

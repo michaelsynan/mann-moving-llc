@@ -1,53 +1,89 @@
+<script
+  setup
+  lang="ts"
+>
+definePageMeta({
+  layout: 'three-column'
+})
+</script>
+
 <template>
   <div>
-    <section
-      class="relative -mt-(--ui-header-height) border-b border-default bg-[url('/cleaning-moving-nepa.jpg')] bg-cover bg-center bg-no-repeat"
-    >
-      <div
-        aria-hidden="true"
-        class="pointer-events-none absolute inset-0 bg-white/70"
-      />
+    <div class="w-screen ml-[calc(50%-50vw)]">
+      <section
+        class="relative flex min-h-svh flex-col -mt-(--ui-header-height) border-b border-default bg-[url('/cleaning-moving-nepa.jpg')] bg-fixed bg-cover bg-center bg-no-repeat"
+      >
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-0 bg-white/70 z-0"
+        />
 
-      <div class="relative mx-auto max-w-6xl px-4 pt-20 pb-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-        <div class="flex justify-center">
-          <AppLogo class="w-full max-w-4xl h-auto" />
-        </div>
+        <img
+          src="/content/tribal.webp"
+          alt=""
+          aria-hidden="true"
+          class="pointer-events-none left-25 fixed top-25 opacity-30 md:block h-auto max-h-[60vh] z-10"
+          loading="lazy"
+          decoding="async"
+        >
 
-        <div class="mx-auto mt-6 max-w-3xl text-center">
-          <h1 class="text-3xl font-black leading-tight tracking-tight text-highlighted uppercase sm:text-5xl">
-            WE ARE CHANGING THE JUNK REMOVAL INDUSTRY
-          </h1>
+        <img
+          src="/content/tribal.webp"
+          alt=""
+          aria-hidden="true"
+          class="pointer-events-none right-25 fixed top-25 opacity-30 md:block h-auto max-h-[60vh] z-10 scale-x-[-1]"
+          loading="lazy"
+          decoding="async"
+        >
 
-          <p class="mt-4 text-base text-muted sm:text-lg">
-            We will cut your junk removal costs with Mann Muscles LLC. We buy your junk and keep it out of the landfill.
-            Our team makes it stress-free.
-          </p>
+        <div
+          class="relative z-20 mx-auto flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center pt-[calc(var(--ui-header-height)+2.5rem)] pb-32 sm:pb-36 lg:pb-40"
+        >
+          <div class="w-full">
+            <div class="flex justify-center">
+              <AppLogo class="w-full max-w-4xl h-auto" />
+            </div>
 
-          <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <UButton
-              label="Junk Removal"
-              to="/junk-removal"
-              icon="i-lucide-arrow-right"
-              size="xl"
-              color="primary"
-              variant="solid"
-              class="w-full sm:w-auto px-8 py-4 text-base sm:text-lg"
-            />
-            <UButton
-              label="Moving Help"
-              to="/moving"
-              icon="i-mdi-truck-fast"
-              size="xl"
-              color="neutral"
-              variant="subtle"
-              class="w-full sm:w-auto px-8 py-4 text-base sm:text-lg"
-            />
+            <div class="mx-auto mt-6 max-w-3xl text-center">
+              <h1 class="text-3xl font-black leading-tight tracking-tight text-highlighted uppercase sm:text-5xl">
+                WE ARE CHANGING THE JUNK REMOVAL INDUSTRY
+              </h1>
+
+              <p class="mt-4 text-base text-muted sm:text-lg">
+                We will cut your junk removal costs with Mann Muscles LLC. We buy your junk and keep it out of the
+                landfill.
+                Our team makes it stress-free.
+              </p>
+
+              <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <UButton
+                  label="Junk Removal"
+                  to="/junk-removal"
+                  icon="i-lucide-arrow-right"
+                  size="xl"
+                  color="primary"
+                  variant="solid"
+                  class="w-full sm:w-auto px-8 py-4 text-base sm:text-lg"
+                />
+                <UButton
+                  label="Moving Help"
+                  to="/moving"
+                  icon="i-mdi-truck-fast"
+                  size="xl"
+                  color="neutral"
+                  variant="subtle"
+                  class="w-full sm:w-auto px-8 py-4 text-base sm:text-lg"
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <HomeTextStrip />
+        <div class="absolute inset-x-0 bottom-0 z-20 w-full">
+          <HomeTextStrip />
+        </div>
+      </section>
+    </div>
 
     <UPageSection class="border-b border-default">
       <HomeSocials />
@@ -128,8 +164,12 @@
       <HomeReviews />
     </UPageSection> -->
 
-    <UPageSection class="bg-elevated border-t border-default">
-      <HomeAbout />
-    </UPageSection>
+    <div class="relative">
+      <div class="sticky top-(--ui-header-height) z-20">
+        <UPageSection class="bg-elevated border-t border-default">
+          <HomeAbout />
+        </UPageSection>
+      </div>
+    </div>
   </div>
 </template>

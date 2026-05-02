@@ -6,7 +6,7 @@
 
 <template>
   <div class="space-y-6">
-    <div class="relative rounded-lg border border-default bg-muted overflow-hidden">
+    <div class="relative rounded-lg border border-default overflow-hidden">
       <img
         src="/mann-group.jpg"
         alt="Mann Muscles LLC crew group photo"

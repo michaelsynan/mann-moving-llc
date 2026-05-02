@@ -12,6 +12,25 @@
         aria-hidden="true"
         class="pointer-events-none absolute inset-0 bg-white/70"
       />
+
+      <img
+        src="/content/tribal.webp"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none left-25 fixed top-25 opacity-30 md:block h-auto max-h-[60vh] z-10"
+        loading="lazy"
+        decoding="async"
+      >
+
+      <img
+        src="/content/tribal.webp"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none right-25 fixed top-25 opacity-30 md:block h-auto max-h-[60vh] z-10 scale-x-[-1]"
+        loading="lazy"
+        decoding="async"
+      >
+
       <div class="relative mx-auto max-w-6xl px-4 pt-20 pb-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div class="flex justify-center">
           <AppLogo class="w-full max-w-4xl h-auto" />

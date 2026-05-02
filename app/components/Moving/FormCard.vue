@@ -286,7 +286,46 @@ async function onSubmit() {
       `Notes: ${state.notes || 'N/A'}`
     ].join('\n')
 
-    const { error } = await supabase
+    const emailResponse = await $fetch<{ status: string, error?: string }>('/api/contact', {
+      method: 'POST',
+      body: {
+        name: state.name,
+        email: state.email,
+        phone: state.phone,
+        service: 'Moving',
+        zipcode: state.pickup.zip,
+        message: [
+          `Pickup: ${addressFrom}`,
+          `Dropoff: ${addressTo}`,
+          '',
+          notes
+        ].join('\n')
+      }
+    })
+
+    if (emailResponse?.status !== 'sent') {
+      submitError.value = emailResponse?.error || 'Could not send email. Please try again.'
+      return
+    }
+
+    try {
+      await $fetch<{ status: string, error?: string }>('/api/sms', {
+        method: 'POST',
+        body: {
+          name: state.name,
+          email: state.email,
+          phone: state.phone,
+          service: 'Moving',
+          zipcode: state.pickup.zip,
+          message: `Pickup: ${addressFrom} | Dropoff: ${addressTo}`
+        }
+      })
+    } catch (err) {
+      // Non-fatal: still allow the moving request to be recorded.
+      console.warn('SMS notification failed', err)
+    }
+
+    const { error } = await (supabase as any)
       .from('jobs')
       .insert({
         job_type: 'moving',

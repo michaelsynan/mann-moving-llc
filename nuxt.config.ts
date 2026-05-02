@@ -10,7 +10,12 @@ export default defineNuxtConfig({
     "@nuxtjs/turnstile",
     "@nuxtjs/color-mode",
     "@nuxtjs/supabase",
+    "nuxt-resend",
   ],
+
+  resend: {
+    apiKey: env.NUXT_RESEND_API_KEY || env.RESEND_API_KEY,
+  },
 
   app: {
     pageTransition: {
@@ -27,6 +32,17 @@ export default defineNuxtConfig({
       // This can be overridden at runtime via the NUXT_TURNSTILE_SECRET_KEY
       // environment variable.
       secretKey: env.NUXT_TURNSTILE_SECRET_KEY || env.TURNSTILE_SECRET_KEY,
+    },
+
+    // Optional: email-to-SMS gateway recipient (e.g. Verizon: 10digits@vtext.com)
+    contactSmsTo: env.NUXT_CONTACT_SMS_TO || env.CONTACT_SMS_TO,
+
+    // Optional: Twilio SMS (server-only)
+    twilio: {
+      accountSid: env.TWILIO_ACCOUNT_SID,
+      authToken: env.TWILIO_AUTH_TOKEN,
+      fromNumber: env.TWILIO_FROM_NUMBER,
+      toNumber: env.TWILIO_TO_NUMBER,
     },
   },
 
@@ -53,6 +69,8 @@ export default defineNuxtConfig({
       include: ["/command(/*)?"],
       // Redirect unauthenticated users here.
       login: "/login",
+      // Where to redirect after auth callbacks (magic link / OAuth).
+      callback: "/command",
     },
   },
 

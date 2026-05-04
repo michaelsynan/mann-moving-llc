@@ -46,40 +46,34 @@ function gridPositionClass(index: number) {
 }
 
 function mobileGridPositionClass(index: number) {
-  // Mobile uses 2 columns. For odd counts, center the final item.
-  if (socials.length % 2 === 1 && index === socials.length - 1) {
-    return 'col-span-2 justify-self-center w-full max-w-xs'
-  }
+  // Mobile is a single column now; no special positioning needed.
   return ''
 }
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl relative">
-    <img
-      src="/content/tribal.webp"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute left-0 top-1/2 hidden -translate-x-2/3 -translate-y-1/2 -rotate-90 opacity-30 sm:block h-28 md:h-32 lg:h-36 w-auto"
-      loading="lazy"
-      decoding="async"
-    >
-
-    <img
-      src="/content/tribal.webp"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute right-0 top-1/2 hidden translate-x-2/3 -translate-y-1/2 rotate-90 opacity-30 sm:block h-28 md:h-32 lg:h-36 w-auto"
-      loading="lazy"
-      decoding="async"
-    >
-
+  <div class="relative w-full px-4 sm:px-0 sm:mx-auto sm:max-w-5xl">
     <div class="relative z-10 text-center sm:px-24 lg:px-28">
+      <div class="mx-auto mb-10 w-full max-w-sm overflow-hidden rounded-lg border border-default bg-muted pb-10">
+        <video
+          class="block w-full h-auto"
+          controls
+          playsinline
+          preload="metadata"
+        >
+          <source
+            src="/videos/vid_web.mp4"
+            type="video/mp4"
+          >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
       <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-highlighted">
         FOLLOW US
       </h2>
 
-      <div class="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 justify-items-stretch">
+      <div class="mt-8 grid grid-cols-1 sm:grid-cols-6 gap-3 justify-items-stretch">
         <a
           v-for="(social, index) in socials"
           :key="social.label"
@@ -88,7 +82,7 @@ function mobileGridPositionClass(index: number) {
           rel="noopener noreferrer"
           :class="[
             'inline-flex items-center justify-center gap-3 rounded-lg px-5 py-3 text-base font-semibold w-full',
-            'text-highlighted ring ring-inset ring-primary/25 bg-primary/10 hover:bg-primary/15 active:bg-primary/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+            'text-highlighted ring ring-inset ring-primary bg-muted hover:bg-elevated active:bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
             mobileGridPositionClass(index),
             'sm:col-span-2',
             gridPositionClass(index)

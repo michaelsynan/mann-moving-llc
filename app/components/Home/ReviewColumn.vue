@@ -50,9 +50,6 @@ const reviews = computed<Review[]>(() => {
           <p class="text-lg font-semibold text-highlighted">
             {{ review.name }}
           </p>
-          <p class="mt-1 text-sm text-muted">
-            {{ review.date }}
-          </p>
 
           <div class="mt-2">
             <div

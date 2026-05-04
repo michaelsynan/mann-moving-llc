@@ -5,18 +5,131 @@
 const route = useRoute()
 const showHomeReviews = computed(() => route.path === '/')
 
-const scrollY = ref(0)
 const reducedMotion = ref(false)
 const reviewsEntered = ref(false)
 
-function updateScroll() {
-  scrollY.value = window.scrollY || 0
+const leftViewportEl = ref<HTMLElement | null>(null)
+const rightViewportEl = ref<HTMLElement | null>(null)
+const leftRailEl = ref<HTMLElement | null>(null)
+const rightRailEl = ref<HTMLElement | null>(null)
+
+const leftMaxScroll = ref(0)
+const rightMaxScroll = ref(0)
+
+const leftTargetTravel = ref(0)
+const rightTargetTravel = ref(0)
+
+const leftCurrentY = ref(0)
+const rightCurrentY = ref(0)
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value))
+}
+
+function lerp(from: number, to: number, t: number) {
+  return from + (to - from) * t
+}
+
+function normalizeWheelDelta(event: WheelEvent) {
+  // deltaMode: 0 = pixels, 1 = lines, 2 = pages
+  if (event.deltaMode === 1)
+    return event.deltaY * 16
+  if (event.deltaMode === 2)
+    return event.deltaY * window.innerHeight
+  return event.deltaY
+}
+
+function onWheel(event: WheelEvent) {
+  if (!showHomeReviews.value || reducedMotion.value)
+    return
+
+  if (leftMaxScroll.value === 0 || rightMaxScroll.value === 0)
+    measureRails()
+
+  // Positive deltaY = scrolling down.
+  const deltaPx = normalizeWheelDelta(event)
+
+  // Tune: left is slower, right is faster.
+  const leftSpeed = 0.55
+  const rightSpeed = 0.85
+
+  leftTargetTravel.value = Math.min(
+    leftMaxScroll.value,
+    Math.max(0, leftTargetTravel.value + deltaPx * leftSpeed)
+  )
+
+  rightTargetTravel.value = Math.min(
+    rightMaxScroll.value,
+    Math.max(0, rightTargetTravel.value + deltaPx * rightSpeed)
+  )
+}
+
+function measureRails() {
+  const leftViewport = leftViewportEl.value
+  const rightViewport = rightViewportEl.value
+  const leftRail = leftRailEl.value
+  const rightRail = rightRailEl.value
+
+  if (leftViewport && leftRail)
+    leftMaxScroll.value = Math.max(0, leftRail.scrollHeight - leftViewport.clientHeight)
+
+  if (rightViewport && rightRail)
+    rightMaxScroll.value = Math.max(0, rightRail.scrollHeight - rightViewport.clientHeight)
+
+  leftTargetTravel.value = Math.min(leftTargetTravel.value, leftMaxScroll.value)
+  rightTargetTravel.value = Math.min(rightTargetTravel.value, rightMaxScroll.value)
 }
 
 onMounted(() => {
   reducedMotion.value = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
-  updateScroll()
-  window.addEventListener('scroll', updateScroll, { passive: true })
+  if (!reducedMotion.value) {
+    leftCurrentY.value = 16
+    rightCurrentY.value = 24
+  }
+  window.addEventListener('wheel', onWheel, { passive: true })
+
+  let resizeObserver: ResizeObserver | undefined
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => {
+      measureRails()
+    })
+    if (leftViewportEl.value)
+      resizeObserver.observe(leftViewportEl.value as unknown as Element)
+    if (rightViewportEl.value)
+      resizeObserver.observe(rightViewportEl.value as unknown as Element)
+    if (leftRailEl.value)
+      resizeObserver.observe(leftRailEl.value as unknown as Element)
+    if (rightRailEl.value)
+      resizeObserver.observe(rightRailEl.value as unknown as Element)
+  }
+
+  // Initial measure after mount/paint.
+  requestAnimationFrame(() => {
+    measureRails()
+  })
+
+  let rafId = 0
+  const tick = () => {
+    rafId = requestAnimationFrame(tick)
+
+    if (!showHomeReviews.value)
+      return
+
+    if (reducedMotion.value) {
+      leftCurrentY.value = 0
+      rightCurrentY.value = 0
+      return
+    }
+
+    const leftTargetY = -leftTargetTravel.value
+    const rightTargetY = -rightTargetTravel.value
+
+    // RAF-driven smoothing; avoid CSS transform transitions.
+    leftCurrentY.value = lerp(leftCurrentY.value, leftTargetY, 0.14)
+    rightCurrentY.value = lerp(rightCurrentY.value, rightTargetY, 0.14)
+  }
+
+  rafId = requestAnimationFrame(tick)
 
   if (reducedMotion.value)
     reviewsEntered.value = true
@@ -24,15 +137,22 @@ onMounted(() => {
     requestAnimationFrame(() => {
       reviewsEntered.value = true
     })
-})
 
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', updateScroll)
+  onBeforeUnmount(() => {
+    window.removeEventListener('wheel', onWheel)
+    if (resizeObserver)
+      resizeObserver.disconnect()
+    cancelAnimationFrame(rafId)
+  })
 })
 
 watch(showHomeReviews, (isHome) => {
   if (!isHome) {
     reviewsEntered.value = false
+    leftCurrentY.value = 0
+    rightCurrentY.value = 0
+    leftTargetTravel.value = 0
+    rightTargetTravel.value = 0
     return
   }
 
@@ -42,40 +162,30 @@ watch(showHomeReviews, (isHome) => {
   }
 
   reviewsEntered.value = false
+  if (!reducedMotion.value) {
+    leftCurrentY.value = 16
+    rightCurrentY.value = 24
+  }
   requestAnimationFrame(() => {
     reviewsEntered.value = true
+    measureRails()
   })
 })
 
-function getSideParallaxStyle(multiplier: number, maxExtra: number) {
-  if (!showHomeReviews.value || reducedMotion.value)
-    return undefined
-
-  // Move side columns faster than the main content.
-  // Document scroll is 1:1; this extra negative translate increases perceived speed.
-  const extra = Math.min(scrollY.value * multiplier, maxExtra)
+const leftRailStyle = computed(() => {
+  const entered = reducedMotion.value || reviewsEntered.value
   return {
-    transform: `translate3d(0, ${-extra}px, 0)`
+    transform: `translate3d(0, ${leftCurrentY.value}px, 0)`,
+    opacity: entered ? 1 : 0
   }
-}
-
-const leftParallaxStyle = computed(() => getSideParallaxStyle(0.14, 360))
-const rightParallaxStyle = computed(() => getSideParallaxStyle(0.34, 760))
-
-const leftEnterClass = computed(() => {
-  if (!showHomeReviews.value)
-    return ''
-  if (reducedMotion.value)
-    return 'opacity-100 translate-y-0'
-  return reviewsEntered.value ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
 })
 
-const rightEnterClass = computed(() => {
-  if (!showHomeReviews.value)
-    return ''
-  if (reducedMotion.value)
-    return 'opacity-100 translate-y-0'
-  return reviewsEntered.value ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+const rightRailStyle = computed(() => {
+  const entered = reducedMotion.value || reviewsEntered.value
+  return {
+    transform: `translate3d(0, ${rightCurrentY.value}px, 0)`,
+    opacity: entered ? 1 : 0
+  }
 })
 
 const navigationItems = [
@@ -135,10 +245,7 @@ const footerSocials = [
             class="flex items-center gap-3"
             aria-label="Mann Muscles LLC"
           >
-            <span class="h-8">
-              <AppLogo class="h-full" />
-            </span>
-            <span class="font-semibold tracking-tight text-highlighted">
+            <span class="text-lg font-extrabold tracking-tight text-highlighted sm:text-xl uppercase">
               Mann Muscles LLC
             </span>
           </NuxtLink>
@@ -148,9 +255,15 @@ const footerSocials = [
       <template #right>
         <div class="flex items-center gap-6">
           <nav class="hidden lg:flex items-center gap-4">
-            <NuxtLink to="/">Home</NuxtLink>
-            <NuxtLink to="/moving">Moving</NuxtLink>
-            <NuxtLink to="/junk-removal">Junk Removal</NuxtLink>
+            <!-- <NuxtLink to="/">Home</NuxtLink> -->
+            <NuxtLink
+              class="text-xl font-semibold upperase"
+              to="/moving"
+            >Moving</NuxtLink>
+            <NuxtLink
+              class="text-xl font-semibold"
+              to="/junk-removal"
+            >Junk Removal</NuxtLink>
           </nav>
 
           <div class="flex items-center gap-3">
@@ -179,17 +292,22 @@ const footerSocials = [
       </template>
     </UHeader>
 
-    <UMain>
+    <UMain class="relative z-20">
       <div class="mx-auto w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-start gap-6">
-          <aside class="relative z-50 hidden lg:block w-80 2xl:w-96 shrink-0">
+          <aside class="relative z-50 hidden lg:block w-80 2xl:w-96 shrink-0 self-stretch">
             <div
               v-if="showHomeReviews"
-              class="pt-[28vh] will-change-transform transition-all duration-700 ease-out"
-              :class="leftEnterClass"
-              :style="leftParallaxStyle"
+              ref="leftViewportEl"
+              class="sticky top-(--ui-header-height) h-[calc(100svh-var(--ui-header-height))] overflow-hidden"
             >
-              <HomeReviewColumn parity="even" />
+              <div
+                ref="leftRailEl"
+                class="pt-[28vh] will-change-transform transition-opacity duration-700 ease-out"
+                :style="leftRailStyle"
+              >
+                <HomeReviewColumn parity="even" />
+              </div>
             </div>
 
             <slot
@@ -202,14 +320,19 @@ const footerSocials = [
             <slot />
           </div>
 
-          <aside class="relative z-50 hidden lg:block w-80 2xl:w-96 shrink-0">
+          <aside class="relative z-50 hidden lg:block w-80 2xl:w-96 shrink-0 self-stretch">
             <div
               v-if="showHomeReviews"
-              class="pt-[56vh] will-change-transform transition-all duration-900 ease-out delay-150"
-              :class="rightEnterClass"
-              :style="rightParallaxStyle"
+              ref="rightViewportEl"
+              class="sticky top-(--ui-header-height) h-[calc(100svh-var(--ui-header-height))] overflow-hidden"
             >
-              <HomeReviewColumn parity="odd" />
+              <div
+                ref="rightRailEl"
+                class="pt-[56vh] will-change-transform transition-opacity duration-900 ease-out delay-150"
+                :style="rightRailStyle"
+              >
+                <HomeReviewColumn parity="odd" />
+              </div>
             </div>
 
             <slot
@@ -221,19 +344,28 @@ const footerSocials = [
       </div>
     </UMain>
 
-    <UFooter class="border-t border-default bg-accented">
-      <div class="w-full py-2">
-        <div class="flex justify-center border-b border-default pb-4 mb-4">
+    <UFooter
+      class="border-t border-default bg-accented"
+      :ui="{
+        root: 'relative z-0',
+        container: 'w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-2',
+        left: 'hidden',
+        right: 'hidden',
+        center: 'm-0 w-full flex items-center justify-center'
+      }"
+    >
+      <div class="w-full py-1">
+        <div class="flex justify-center border-b border-default pb-2 mb-2">
           <img
             src="/content/NumberClassicPNGTransparent.png"
             alt="Mann Muscles contact number"
-            class="h-14 sm:h-16 w-auto"
+            class="h-10 sm:h-12 w-auto"
             loading="lazy"
             decoding="async"
           >
         </div>
 
-        <div class="mb-4 flex items-center justify-center gap-2">
+        <div class="mb-2 flex items-center justify-center gap-1">
           <UButton
             v-for="social in footerSocials"
             :key="social.label"

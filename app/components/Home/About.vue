@@ -25,26 +25,31 @@
       />
     </div>
 
-    <div class="mx-auto max-w-3xl text-center">
-      <h2 class="text-4xl sm:text-5xl font-bold tracking-tight text-highlighted">
-        We are Mann Muscles LLC
-      </h2>
+    <div class="relative z-10 mx-auto mt-6 sm:-mt-20 lg:-mt-24 max-w-xl sm:max-w-2xl">
+      <div class="rounded-lg border border-default bg-muted px-6 py-8 sm:px-10 sm:py-10 text-center">
+        <h2 class="text-4xl sm:text-5xl font-bold tracking-tight text-highlighted">
+          We are Mann Muscles LLC
+        </h2>
 
-      <p class="mt-4 text-base sm:text-lg text-muted">
-        Mann Muscles LLC is a family-run team serving Northeastern PA. We handle junk removal and help you from move by
-        doing the heavy lifting with care. We are committed to giving you the best service possible and helping you move
-        on to the next chapter of your life with ease.
-      </p>
+        <p class="mt-4 text-base sm:text-lg text-muted">
+          What started as a small family-run business, Mann Muscles LLC has grown into a trusted team serving
+          Northeastern
+          PA. We work hard, treat every customer with respect, and never forget the values that built our company. From
+          heavy lifting to full junk removal, we’re committed to making every job simple, stress-free, and done right.
 
-      <div class="mt-6 flex justify-center">
-        <UButton
-          label="Get in Touch"
-          to="tel:"
-          icon="i-mdi-phone"
-          size="xl"
-          color="primary"
-          variant="solid"
-        />
+        </p>
+
+        <div class="mt-6 flex w-full justify-center">
+          <UButton
+            label="Get in Touch"
+            to="tel:"
+            icon="i-mdi-phone"
+            size="xl"
+            color="primary"
+            variant="solid"
+            class="w-full sm:w-auto"
+          />
+        </div>
       </div>
     </div>
   </div>

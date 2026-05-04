@@ -6,18 +6,18 @@
 <template>
   <div>
     <section
-      class="relative -mt-(--ui-header-height) border-b border-default bg-[url('/cleaning-moving-nepa.jpg')] bg-cover bg-center bg-no-repeat"
+      class="relative isolate -mt-(--ui-header-height) border-b border-default bg-[url('/cleaning-moving-nepa.jpg')] bg-cover bg-center bg-no-repeat"
     >
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute inset-0 bg-white/70"
+        class="pointer-events-none absolute inset-0 bg-white/70 z-10"
       />
 
       <img
         src="/content/tribal.webp"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none left-25 fixed top-25 opacity-30 md:block h-auto max-h-[60vh] z-10"
+        class="pointer-events-none fixed left-2 top-1/2 -translate-y-1/2 opacity-15 sm:opacity-25 md:opacity-30 h-auto max-h-[18vh] sm:max-h-[36vh] md:left-25 md:top-25 md:translate-y-0 md:max-h-[60vh] z-0"
         loading="lazy"
         decoding="async"
       >
@@ -26,12 +26,12 @@
         src="/content/tribal.webp"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none right-25 fixed top-25 opacity-30 md:block h-auto max-h-[60vh] z-10 scale-x-[-1]"
+        class="pointer-events-none fixed right-2 top-1/2 -translate-y-1/2 opacity-15 sm:opacity-25 md:opacity-30 h-auto max-h-[18vh] sm:max-h-[36vh] md:right-25 md:top-25 md:translate-y-0 md:max-h-[60vh] z-0 scale-x-[-1]"
         loading="lazy"
         decoding="async"
       >
 
-      <div class="relative mx-auto max-w-6xl px-4 pt-20 pb-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+      <div class="relative z-20 mx-auto max-w-6xl px-4 pt-20 pb-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div class="flex justify-center">
           <AppLogo class="w-full max-w-4xl h-auto" />
         </div>

@@ -14,7 +14,7 @@ const videos = [
 </script>
 
 <template>
-  <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-6xl px-1 sm:px-6 lg:px-8 ">
     <div class="mb-12 text-center">
       <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-highlighted">
         Check out these before and afters
@@ -42,7 +42,7 @@ const videos = [
       </div>
     </div>
 
-    <div class="mt-16 flex justify-center">
+    <div class="mt-16 flex w-full justify-center">
       <UButton
         label="Leave a Review"
         to="https://www.facebook.com/MannMuscles/reviews/?id=100063722133622&sk=reviews"
@@ -52,6 +52,7 @@ const videos = [
         color="primary"
         size="xl"
         variant="solid"
+        class="w-full sm:w-auto"
       />
     </div>
   </div>

@@ -59,10 +59,7 @@ const footerSocials = [
             class="flex items-center gap-3"
             aria-label="Mann Muscles LLC"
           >
-            <span class="h-8">
-              <AppLogo class="h-full" />
-            </span>
-            <span class="font-semibold tracking-tight text-highlighted">
+            <span class="text-lg font-extrabold tracking-tight text-highlighted sm:text-xl uppercase">
               Mann Muscles LLC
             </span>
           </NuxtLink>
@@ -107,19 +104,28 @@ const footerSocials = [
       <slot />
     </UMain>
 
-    <UFooter class="border-t border-default bg-accented">
-      <div class="w-full py-2">
-        <div class="flex justify-center border-b border-default pb-4 mb-4">
+    <UFooter
+      class="border-t border-default bg-accented"
+      :ui="{
+        root: 'relative z-0',
+        container: 'w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-2',
+        left: 'hidden',
+        right: 'hidden',
+        center: 'm-0 w-full flex items-center justify-center'
+      }"
+    >
+      <div class="w-full py-1">
+        <div class="flex justify-center border-b border-default pb-2 mb-2">
           <img
             src="/content/NumberClassicPNGTransparent.png"
             alt="Mann Muscles contact number"
-            class="h-14 sm:h-16 w-auto"
+            class="h-10 sm:h-12 w-auto"
             loading="lazy"
             decoding="async"
           >
         </div>
 
-        <div class="mb-4 flex items-center justify-center gap-2">
+        <div class="mb-2 flex items-center justify-center gap-1">
           <UButton
             v-for="social in footerSocials"
             :key="social.label"

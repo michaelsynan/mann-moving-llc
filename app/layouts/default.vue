@@ -4,10 +4,6 @@
 >
 const navigationItems = [
   {
-    label: 'Home',
-    to: '/'
-  },
-  {
     label: 'Moving',
     to: '/moving'
   },
@@ -57,11 +53,13 @@ const footerSocials = [
           <NuxtLink
             to="/"
             class="flex items-center gap-3"
-            aria-label="Mann Muscles LLC"
+            aria-label="Mann Muscles LLC Logo"
           >
-            <span class="text-lg font-extrabold tracking-tight text-highlighted sm:text-xl uppercase">
-              Mann Muscles LLC
-            </span>
+            <img
+              src="/mann-logo-type.png"
+              alt="Mann Muscles LLC Logo"
+              class="h-8 w-auto"
+            >
           </NuxtLink>
         </div>
       </template>
@@ -69,9 +67,8 @@ const footerSocials = [
       <template #right>
         <div class="flex items-center gap-6">
           <nav class="hidden lg:flex items-center gap-4">
-            <NuxtLink to="/">Home</NuxtLink>
-            <NuxtLink to="/moving">Moving</NuxtLink>
-            <NuxtLink to="/junk-removal">Junk Removal</NuxtLink>
+            <NuxtLink class="text-xl font-semibold text-stone-950 uppercase" to="/moving">Moving</NuxtLink>
+            <NuxtLink class="text-xl font-semibold text-stone-950 uppercase" to="/junk-removal">Junk Removal</NuxtLink>
           </nav>
 
           <div class="flex items-center gap-3">
@@ -91,10 +88,19 @@ const footerSocials = [
       </template>
 
       <template #body>
-        <div class="py-4">
+        <div
+          class="min-h-[calc(100svh-var(--ui-header-height))] px-4 py-10 flex items-center justify-center"
+          style="transform: translateY(calc(var(--ui-header-height) / -2));"
+        >
           <UNavigationMenu
             orientation="vertical"
             :items="navigationItems"
+            :ui="{
+              root: 'w-full',
+              list: 'w-full flex flex-col items-center justify-center gap-6',
+              item: 'w-full flex justify-center',
+              link: 'w-full max-w-sm justify-center py-5 text-center text-4xl font-extrabold tracking-tight text-stone-950 uppercase'
+            }"
           />
         </div>
       </template>

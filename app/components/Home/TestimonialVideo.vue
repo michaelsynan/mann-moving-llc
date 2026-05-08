@@ -3,43 +3,49 @@
   lang="ts"
 >
 const videos = [
-  '/videos/changing_web.mp4',
-  '/videos/cleanout_web.mp4',
-  // '/videos/JunkRemovalNEW30sec_web.mp4',
-  '/videos/vid_web.mp4'
+  {
+    src: '/videos/changing_web.mp4',
+    poster: '/videos/posters/changing_web.jpg',
+  },
+  {
+    src: '/videos/cleanout_web.mp4',
+    poster: '/videos/posters/cleanout_web.jpg',
+  },
+  {
+    src: '/videos/JunkRemovalNEW30sec_web.mp4',
+    poster: '/videos/posters/JunkRemovalNEW30sec_web.jpg',
+  },
+  // {
+  //   src: '/videos/vid_web.mp4',
+  //   poster: '/videos/posters/vid_web.jpg',
+  // },
 ]
-
-// Temporarily disabled poster image usage per request.
-// const poster = '/content/ProfilePic1200x1200PNGTransparent.png'
 </script>
 
 <template>
-  <div class="mx-auto max-w-6xl px-1 sm:px-6 lg:px-8 ">
+  <div class="mx-auto max-w-6xl px-1 sm:px-6 lg:px-0">
     <div class="mb-12 text-center">
-      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-highlighted">
-        Check out these before and afters
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-highlighted uppercase">
+        Check Out These Before & Afters
       </h2>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div
-        v-for="videoSrc in videos"
-        :key="videoSrc"
-        class="overflow-hidden rounded-lg border border-default bg-muted"
+    <div class="flex flex-col gap-4 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-center overflow-x-hidden">
+      <video
+        v-for="video in videos"
+        :key="video.src"
+        class="testimonial-video block w-full h-auto rounded-lg border border-default bg-muted sm:w-auto"
+        controls
+        playsinline
+        preload="metadata"
+        :poster="video.poster"
       >
-        <video
-          class="block w-full h-auto"
-          controls
-          playsinline
-          preload="metadata"
+        <source
+          :src="video.src"
+          type="video/mp4"
         >
-          <source
-            :src="videoSrc"
-            type="video/mp4"
-          >
-          Your browser does not support the video tag.
-        </video>
-      </div>
+        Your browser does not support the video tag.
+      </video>
     </div>
 
     <div class="mt-16 flex w-full justify-center">
@@ -57,3 +63,13 @@ const videos = [
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (min-width: 640px) {
+  .testimonial-video {
+    height: clamp(240px, 26vw, 500px);
+    width: auto;
+    max-width: none;
+  }
+}
+</style>

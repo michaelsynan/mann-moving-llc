@@ -175,7 +175,7 @@ function onPointerUp(event: PointerEvent) {
             :data-index="index"
             class="snap-start snap-always shrink-0 w-[86%] sm:w-[70%]"
           >
-            <div class="h-full rounded-lg border border-default bg-muted p-6">
+            <div class="h-full rounded-lg border border-default bg-amber-50 p-6">
               <p class="text-lg font-semibold text-highlighted">
                 {{ review.name }}
               </p>

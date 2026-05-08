@@ -22,6 +22,8 @@ const rightTargetTravel = ref(0)
 const leftCurrentY = ref(0)
 const rightCurrentY = ref(0)
 
+const lastWheelAt = ref(0)
+
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value))
 }
@@ -42,6 +44,8 @@ function normalizeWheelDelta(event: WheelEvent) {
 function onWheel(event: WheelEvent) {
   if (!showHomeReviews.value || reducedMotion.value)
     return
+
+  lastWheelAt.value = performance.now()
 
   if (leftMaxScroll.value === 0 || rightMaxScroll.value === 0)
     measureRails()
@@ -86,6 +90,7 @@ onMounted(() => {
     leftCurrentY.value = 16
     rightCurrentY.value = 24
   }
+  lastWheelAt.value = performance.now()
   window.addEventListener('wheel', onWheel, { passive: true })
 
   let resizeObserver: ResizeObserver | undefined
@@ -109,8 +114,13 @@ onMounted(() => {
   })
 
   let rafId = 0
+  let lastTickAt = performance.now()
   const tick = () => {
     rafId = requestAnimationFrame(tick)
+
+    const now = performance.now()
+    const dtMs = Math.min(48, Math.max(0, now - lastTickAt))
+    lastTickAt = now
 
     if (!showHomeReviews.value)
       return
@@ -119,6 +129,31 @@ onMounted(() => {
       leftCurrentY.value = 0
       rightCurrentY.value = 0
       return
+    }
+
+    // Ambient upward motion when idle (no wheel input recently).
+    // This keeps the rails feeling alive even when the user isn't scrolling.
+    if (leftMaxScroll.value === 0 || rightMaxScroll.value === 0)
+      measureRails()
+
+    const idleMs = now - lastWheelAt.value
+    const idleThresholdMs = 450
+    if (idleMs > idleThresholdMs) {
+      const dtSeconds = dtMs / 1000
+      const leftIdlePxPerSecond = 10
+      const rightIdlePxPerSecond = 14
+
+      if (leftMaxScroll.value > 0) {
+        leftTargetTravel.value += leftIdlePxPerSecond * dtSeconds
+        if (leftTargetTravel.value >= leftMaxScroll.value)
+          leftTargetTravel.value = 0
+      }
+
+      if (rightMaxScroll.value > 0) {
+        rightTargetTravel.value += rightIdlePxPerSecond * dtSeconds
+        if (rightTargetTravel.value >= rightMaxScroll.value)
+          rightTargetTravel.value = 0
+      }
     }
 
     const leftTargetY = -leftTargetTravel.value
@@ -199,31 +234,39 @@ const navigationItems = [
   }
 ]
 
+const mobileNavigationItems = [
+  {
+    label: 'Home',
+    to: '/'
+  },
+  ...navigationItems
+]
+
 const footerSocials = [
   {
     label: 'Facebook',
     icon: 'i-mdi-facebook',
-    href: 'https://www.facebook.com/'
+    href: 'https://www.facebook.com/MannMuscles/'
   },
   {
     label: 'TikTok',
     icon: 'i-simple-icons-tiktok',
-    href: 'https://www.tiktok.com/'
+    href: '/'
   },
   {
     label: 'Yelp',
     icon: 'i-mdi-yelp',
-    href: 'https://www.yelp.com/'
+    href: 'https://www.yelp.com/biz/mann-muscles-forest-city-2'
   },
   {
     label: 'Google',
     icon: 'i-mdi-google',
-    href: 'https://www.google.com/'
+    href: 'https://share.google/Ac76f9Wav8TrpKnFd'
   },
   {
     label: 'Instagram',
     icon: 'i-mdi-instagram',
-    href: 'https://www.instagram.com/'
+    href: 'https://www.instagram.com/musclellc'
   }
 ]
 </script>
@@ -231,7 +274,7 @@ const footerSocials = [
 <template>
   <div>
     <UHeader
-      class="sticky top-0 z-60"
+      class="sticky top-0 z-60 bg-amber-50"
       :ui="{ container: 'w-full max-w-none px-4 sm:px-6 lg:px-8' }"
     >
       <template #left>
@@ -288,7 +331,7 @@ const footerSocials = [
         >
           <UNavigationMenu
             orientation="vertical"
-            :items="navigationItems"
+            :items="mobileNavigationItems"
             :ui="{
               root: 'w-full',
               list: 'w-full flex flex-col items-center justify-center gap-6',

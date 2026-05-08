@@ -13,31 +13,39 @@ const navigationItems = [
   }
 ]
 
+const mobileNavigationItems = [
+  {
+    label: 'Home',
+    to: '/'
+  },
+  ...navigationItems
+]
+
 const footerSocials = [
   {
     label: 'Facebook',
     icon: 'i-mdi-facebook',
-    href: 'https://www.facebook.com/'
+    href: 'https://www.facebook.com/MannMuscles/'
   },
   {
     label: 'TikTok',
     icon: 'i-simple-icons-tiktok',
-    href: 'https://www.tiktok.com/'
+    href: '/'
   },
   {
     label: 'Yelp',
     icon: 'i-mdi-yelp',
-    href: 'https://www.yelp.com/'
+    href: 'https://www.yelp.com/biz/mann-muscles-forest-city-2'
   },
   {
     label: 'Google',
     icon: 'i-mdi-google',
-    href: 'https://www.google.com/'
+    href: 'https://share.google/Ac76f9Wav8TrpKnFd'
   },
   {
     label: 'Instagram',
     icon: 'i-mdi-instagram',
-    href: 'https://www.instagram.com/'
+    href: 'https://www.instagram.com/musclellc'
   }
 ]
 </script>
@@ -45,7 +53,7 @@ const footerSocials = [
 <template>
   <div>
     <UHeader
-      class="sticky top-0 z-60"
+      class="sticky top-0 z-60 bg-amber-50"
       :ui="{ container: 'w-full max-w-none px-4 sm:px-6 lg:px-8' }"
     >
       <template #left>
@@ -67,8 +75,14 @@ const footerSocials = [
       <template #right>
         <div class="flex items-center gap-6">
           <nav class="hidden lg:flex items-center gap-4">
-            <NuxtLink class="text-xl font-semibold text-stone-950 uppercase" to="/moving">Moving</NuxtLink>
-            <NuxtLink class="text-xl font-semibold text-stone-950 uppercase" to="/junk-removal">Junk Removal</NuxtLink>
+            <NuxtLink
+              class="text-xl font-semibold text-stone-950 uppercase"
+              to="/moving"
+            >Moving</NuxtLink>
+            <NuxtLink
+              class="text-xl font-semibold text-stone-950 uppercase"
+              to="/junk-removal"
+            >Junk Removal</NuxtLink>
           </nav>
 
           <div class="flex items-center gap-3">
@@ -94,7 +108,7 @@ const footerSocials = [
         >
           <UNavigationMenu
             orientation="vertical"
-            :items="navigationItems"
+            :items="mobileNavigationItems"
             :ui="{
               root: 'w-full',
               list: 'w-full flex flex-col items-center justify-center gap-6',

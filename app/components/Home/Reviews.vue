@@ -103,7 +103,7 @@ const reviews: Review[] = [
       :class="idx % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'"
     >
       <div
-        class="w-full self-start rounded-lg border border-default bg-primary/5 dark:bg-primary/10 p-6 sm:p-8 lg:w-1/2 lg:sticky lg:top-24"
+        class="w-full self-start rounded-lg border border-default bg-amber-50 p-6 sm:p-8 lg:w-1/2 lg:sticky lg:top-24"
       >
         <div class="flex items-start gap-4">
           <div class="size-12 shrink-0">

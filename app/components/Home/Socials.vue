@@ -6,27 +6,27 @@ const socials = [
   {
     label: 'Facebook',
     icon: 'i-mdi-facebook',
-    href: 'https://www.facebook.com/'
+    href: 'https://www.facebook.com/MannMuscles/'
   },
   {
     label: 'TikTok',
     icon: 'i-simple-icons-tiktok',
-    href: 'https://www.tiktok.com/'
+    href: '/'
   },
   {
     label: 'Yelp',
     icon: 'i-mdi-yelp',
-    href: 'https://www.yelp.com/'
+    href: 'https://www.yelp.com/biz/mann-muscles-forest-city-2'
   },
   {
     label: 'Google',
     icon: 'i-mdi-google',
-    href: 'https://www.google.com/'
+    href: 'https://share.google/Ac76f9Wav8TrpKnFd'
   },
   {
     label: 'Instagram',
     icon: 'i-mdi-instagram',
-    href: 'https://www.instagram.com/'
+    href: 'https://www.instagram.com/musclellc'
   }
 ] as const
 

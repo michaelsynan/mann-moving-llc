@@ -45,7 +45,7 @@ const reviews = computed<Review[]>(() => {
       :key="`${review.name}-${review.date}`"
       class="min-h-screen flex items-center"
     >
-      <div class="relative z-20 w-full rounded-lg border border-default bg-default p-6 sm:p-8">
+      <div class="relative z-20 w-full rounded-lg border border-default bg-amber-50 p-6 sm:p-8">
         <div class="min-w-0">
           <p class="text-lg font-semibold text-highlighted">
             {{ review.name }}

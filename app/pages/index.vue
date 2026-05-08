@@ -94,12 +94,12 @@ definePageMeta({
         <HomeMobileReviews />
       </div>
 
-      <UPageSection class="border-b border-default">
+      <UPageSection class=" ">
         <HomeTestimonialVideo />
       </UPageSection>
 
-      <section class="border-b border-default bg-accented py-10">
-        <div class="mx-auto max-w-6xl px-4 pt-6 pb-0 sm:px-6 lg:px-8 flex justify-center">
+      <section class=" bg-muted shadow-none border border-default  py-10 rounded-lg">
+        <div class="mx-auto max-w-6xl px-4 pt-6 pb-0 sm:px-6 lg:px-8 flex justify-center border-0">
           <img
             src="/content/Logo%26NumberClassicPNGTransparent.png"
             alt="Mann Muscles LLC logo and phone number"
@@ -111,7 +111,7 @@ definePageMeta({
 
         <UPageSection
           id="features"
-          class="border-0! bg-transparent!"
+          class=" bg-transparent! rounded-xl "
           title="Junk Removal & Moving You Can Trust"
           description="We have 5 stars on Facebook and Google for a reason. From moving you to removing your old stuff, we do it all. Leave the heavy lifting to us so you can focus on the important aspects of your day."
           :ui="{ container: 'py-6 sm:py-8 lg:py-10 gap-6 sm:gap-8', title: 'text-center', description: 'text-center', body: 'mt-8 sm:mt-10' }"

@@ -28,7 +28,7 @@ definePageMeta({
     >
 
     <div class="relative z-10">
-      <div class="w-screen ml-[calc(50%-50vw)]">
+      <div class="w-screen mx-[calc(50%-50vw)]">
         <section
           class="relative isolate flex min-h-svh flex-col -mt-(--ui-header-height)  bg-[url('/best-moving-company.png')] bg-fixed bg-cover bg-center bg-no-repeat"
         >

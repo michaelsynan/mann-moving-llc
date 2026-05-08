@@ -157,7 +157,7 @@ function onPointerUp(event: PointerEvent) {
       </div>
     </div>
 
-    <div class="mt-6 w-screen ml-[calc(50%-50vw)]">
+    <div class="mt-6 w-screen mx-[calc(50%-50vw)]">
       <div
         ref="scroller"
         class="review-scroller no-scrollbar overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"

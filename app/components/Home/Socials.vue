@@ -54,12 +54,14 @@ function mobileGridPositionClass(index: number) {
 <template>
   <div class="relative w-full px-4 sm:px-0 sm:mx-auto sm:max-w-5xl">
     <div class="relative z-10 text-center sm:px-24 lg:px-28">
-      <div class="mx-auto mb-10 w-full max-w-sm overflow-hidden rounded-lg border border-default bg-muted pb-10">
+      <div class="mx-auto mb-10 w-full">
         <video
-          class="block w-full h-auto"
+          class="block w-auto max-w-full mx-auto rounded-lg border border-default bg-muted"
+          style="height: 650px"
           controls
           playsinline
           preload="metadata"
+          poster="/videos/posters/vid_web.jpg"
         >
           <source
             src="/videos/vid_web.mp4"

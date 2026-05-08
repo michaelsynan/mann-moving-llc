@@ -24,7 +24,12 @@ export default defineNuxtConfig({
     },
   },
   turnstile: {
-    siteKey: env.NUXT_PUBLIC_TURNSTILE_SITE_KEY,
+    // Turnstile site key is intentionally public (it is embedded in the browser).
+    // We support a non-"KEY" env var name to avoid some host UIs warning about it.
+    siteKey:
+      env.NUXT_PUBLIC_TURNSTILE_SITE_KEY ||
+      env.NUXT_PUBLIC_TURNSTILE_SITE ||
+      env.TURNSTILE_SITE_KEY,
   },
 
   runtimeConfig: {

@@ -15,6 +15,29 @@ const isSubmitting = ref(false)
 
 const turnstileToken = ref<string | undefined>(undefined)
 const turnstileKey = ref(0)
+const turnstileOptions = {
+  'error-callback': (error: unknown) => {
+    if (!import.meta.client) {
+      return
+    }
+
+    console.error('[turnstile] widget error', {
+      error,
+      host: window.location.host,
+      href: window.location.href
+    })
+  },
+  'unsupported-callback': () => {
+    if (!import.meta.client) {
+      return
+    }
+
+    console.error('[turnstile] widget unsupported', {
+      host: window.location.host,
+      href: window.location.href
+    })
+  }
+} as const
 
 function validateForm(values: typeof state) {
   const errors: Array<{ name: string, message: string }> = []
@@ -166,6 +189,7 @@ async function onSignOut() {
                 <NuxtTurnstile
                   :key="turnstileKey"
                   v-model="turnstileToken"
+                  :options="turnstileOptions"
                 />
               </ClientOnly>
 

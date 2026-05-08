@@ -51,7 +51,8 @@ definePageMeta({
                 </h1>
 
                 <p class="mt-4 text-xl md:text-2xl text-muted ">
-                  We will cut your junk removal costs with Mann Muscles LLC. We buy your junk and keep it out of the
+                  We will cut your junk removal costs with Mann Muscles LLC. We discount your bill for valuables we can
+                  re-home and keep it out of the
                   landfill.
                   Our team makes it stress-free.
                 </p>

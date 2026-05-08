@@ -13,6 +13,29 @@ type Address = {
 }
 
 const token = ref()
+const turnstileOptions = {
+  'error-callback': (error: unknown) => {
+    if (!import.meta.client) {
+      return
+    }
+
+    console.error('[turnstile] widget error', {
+      error,
+      host: window.location.host,
+      href: window.location.href
+    })
+  },
+  'unsupported-callback': () => {
+    if (!import.meta.client) {
+      return
+    }
+
+    console.error('[turnstile] widget unsupported', {
+      host: window.location.host,
+      href: window.location.href
+    })
+  }
+} as const
 const supabase = useSupabaseClient()
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
@@ -860,6 +883,7 @@ async function onSubmit() {
       </div>
       <NuxtTurnstile
         v-model="token"
+        :options="turnstileOptions"
         class="pt-6"
       />
       <div class="mt-8 flex items-center justify-center">

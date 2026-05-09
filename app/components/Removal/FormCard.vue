@@ -975,7 +975,7 @@ function onServiceDateClick(event: MouseEvent) {
           Request removal / clean out
         </p> -->
         <h2
-          class="text-[clamp(1.35rem,2.8vw,1.9rem)] font-black leading-tight tracking-tight text-highlighted uppercase whitespace-nowrap truncate"
+          class="text-[clamp(1.35rem,2.8vw,1.9rem)] font-black leading-tight tracking-tight text-highlighted uppercase whitespace-normal wrap-break-word"
         >
           Tell us what you need removed
         </h2>

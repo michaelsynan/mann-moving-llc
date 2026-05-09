@@ -157,17 +157,17 @@ function onPointerUp(event: PointerEvent) {
       </div>
     </div>
 
-    <div class="mt-6 w-svw mx-[calc(50%-50svw)]">
+    <div class="mt-6 w-svw mx-[calc(50%-50svw)] px-4 sm:px-6">
       <div
         ref="scroller"
-        class="review-scroller no-scrollbar overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"
+        class="review-scroller no-scrollbar -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"
         :class="isDragging ? 'cursor-grabbing' : 'cursor-grab'"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
         @pointercancel="onPointerUp"
       >
-        <div class="flex gap-4">
+        <div class="flex items-start gap-4">
           <article
             v-for="(review, index) in reviews"
             :key="`${review.name}-${review.date}`"
@@ -175,7 +175,7 @@ function onPointerUp(event: PointerEvent) {
             :data-index="index"
             class="snap-start snap-always shrink-0 w-[86%] sm:w-[70%]"
           >
-            <div class="h-full rounded-lg border border-default bg-amber-50 p-6">
+            <div class="rounded-lg border border-default bg-amber-50 p-6">
               <p class="text-lg font-semibold text-highlighted">
                 {{ review.name }}
               </p>

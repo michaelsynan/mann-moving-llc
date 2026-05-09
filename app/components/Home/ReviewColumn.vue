@@ -64,18 +64,6 @@ const reviews = computed<Review[]>(() => {
                 class="size-5"
               />
             </div>
-
-            <div
-              v-else
-              class="inline-flex items-center gap-2 rounded-full border border-default bg-default px-3 py-1 text-sm font-semibold text-highlighted"
-              aria-label="Recommends"
-            >
-              <UIcon
-                name="i-lucide-badge-check"
-                class="size-4 text-primary"
-              />
-              <span>{{ review.stars }}</span>
-            </div>
           </div>
         </div>
 

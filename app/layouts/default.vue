@@ -87,10 +87,9 @@ const footerSocials = [
 
           <div class="flex items-center gap-3">
             <UButton
-              to="https://github.com/nuxt-ui-templates/starter"
-              target="_blank"
+              href="tel:+15702678864"
               icon="i-mdi-phone"
-              aria-label="Call Us"
+              aria-label="Call 1-570-267-8864"
               color="primary"
               variant="solid"
               size="xl"
@@ -136,13 +135,18 @@ const footerSocials = [
     >
       <div class="w-full py-1">
         <div class="flex justify-center border-b border-default pb-2 mb-2">
-          <img
-            src="/content/NumberClassicPNGTransparent.png"
-            alt="Mann Muscles contact number"
-            class="h-10 sm:h-12 w-auto"
-            loading="lazy"
-            decoding="async"
+          <a
+            href="tel:+15702678864"
+            aria-label="Call 1-570-267-8864"
           >
+            <img
+              src="/content/NumberClassicPNGTransparent.png"
+              alt="Mann Muscles contact number"
+              class="h-10 sm:h-12 w-auto"
+              loading="lazy"
+              decoding="async"
+            >
+          </a>
         </div>
 
         <div class="mb-2 flex items-center justify-center gap-1">

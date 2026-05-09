@@ -33,6 +33,30 @@ export default defineEventHandler(async (event) => {
   const zipcode = String(body.zipcode ?? "").trim();
   const message = String(body.message ?? "").trim();
 
+  // Bot mitigation (low-friction): honeypot + minimum time-to-submit.
+  const website = String(body.website ?? "").trim();
+  if (website) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Spam detected" };
+  }
+
+  const startedAtRaw = body.startedAt;
+  const startedAt =
+    typeof startedAtRaw === "number"
+      ? startedAtRaw
+      : Number.parseInt(String(startedAtRaw ?? ""), 10);
+
+  if (!Number.isFinite(startedAt)) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Please try again." };
+  }
+
+  const elapsedMs = Date.now() - startedAt;
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 2500) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Please wait a moment and try again." };
+  }
+
   if (!name || !email || !service || !message) {
     setResponseStatus(event, 400);
     return { status: "error", error: "Missing required fields" };

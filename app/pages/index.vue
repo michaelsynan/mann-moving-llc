@@ -28,7 +28,7 @@ definePageMeta({
     >
 
     <div class="relative z-10">
-      <div class="w-screen mx-[calc(50%-50vw)]">
+      <div class="w-svw mx-[calc(50%-50svw)]">
         <section
           class="relative isolate flex min-h-svh flex-col -mt-(--ui-header-height)  bg-[url('/best-moving-company.png')] bg-fixed bg-cover bg-center bg-no-repeat"
         >
@@ -170,7 +170,7 @@ definePageMeta({
       <HomeReviews />
     </UPageSection> -->
 
-      <div class="pb-10 pt-20 px-8 md:px-10">
+      <div class="pb-10 pt-20 md:px-10">
         <HomeAbout />
       </div>
     </div>

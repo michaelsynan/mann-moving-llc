@@ -24,10 +24,6 @@ const rightCurrentY = ref(0)
 
 const lastWheelAt = ref(0)
 
-function clamp01(value: number) {
-  return Math.min(1, Math.max(0, value))
-}
-
 function lerp(from: number, to: number, t: number) {
   return from + (to - from) * t
 }
@@ -310,10 +306,9 @@ const footerSocials = [
 
           <div class="flex items-center gap-3">
             <UButton
-              to="https://github.com/nuxt-ui-templates/starter"
-              target="_blank"
+              href="tel:+15702678864"
               icon="i-mdi-phone"
-              aria-label="Call Us"
+              aria-label="Call 1-570-267-8864"
               color="primary"
               variant="solid"
               size="xl"
@@ -343,14 +338,16 @@ const footerSocials = [
       </template>
     </UHeader>
 
-    <UMain class="relative z-20">
+    <UMain class="relative z-40! overflow-x-clip">
       <div class="mx-auto w-full px-4 sm:px-6 lg:px-8">
-        <div class="flex items-start gap-6">
-          <aside class="relative z-50 hidden lg:block w-80 2xl:w-96 shrink-0 self-stretch">
+        <div
+          class="lg:grid lg:gap-6 lg:grid-cols-[20rem_minmax(0,1fr)_20rem] 2xl:lg:grid-cols-[24rem_minmax(0,1fr)_24rem]"
+        >
+          <aside class="relative z-70! hidden lg:block shrink-0 self-stretch">
             <div
               v-if="showHomeReviews"
               ref="leftViewportEl"
-              class="sticky top-(--ui-header-height) h-[calc(100svh-var(--ui-header-height))] overflow-hidden"
+              class="sticky top-(--ui-header-height) z-70! h-[calc(100svh-var(--ui-header-height))] overflow-hidden"
             >
               <div
                 ref="leftRailEl"
@@ -367,15 +364,15 @@ const footerSocials = [
             />
           </aside>
 
-          <div class="relative z-10 min-w-0 flex-1">
+          <div class="relative z-10 min-w-0">
             <slot />
           </div>
 
-          <aside class="relative z-50 hidden lg:block w-80 2xl:w-96 shrink-0 self-stretch">
+          <aside class="relative z-70! hidden lg:block shrink-0 self-stretch">
             <div
               v-if="showHomeReviews"
               ref="rightViewportEl"
-              class="sticky top-(--ui-header-height) h-[calc(100svh-var(--ui-header-height))] overflow-hidden"
+              class="sticky top-(--ui-header-height) z-70! h-[calc(100svh-var(--ui-header-height))] overflow-hidden"
             >
               <div
                 ref="rightRailEl"
@@ -396,10 +393,10 @@ const footerSocials = [
     </UMain>
 
     <UFooter
-      class="border-t border-default bg-accented"
+      class="relative z-0! border-t border-default bg-accented"
       :ui="{
-        root: 'relative z-0',
-        container: 'w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-2',
+        root: '',
+        container: 'w-full max-w-none mx-auto px-0 py-2',
         left: 'hidden',
         right: 'hidden',
         center: 'm-0 w-full flex items-center justify-center'
@@ -407,13 +404,18 @@ const footerSocials = [
     >
       <div class="w-full py-1">
         <div class="flex justify-center border-b border-default pb-2 mb-2">
-          <img
-            src="/content/NumberClassicPNGTransparent.png"
-            alt="Mann Muscles contact number"
-            class="h-10 sm:h-12 w-auto"
-            loading="lazy"
-            decoding="async"
+          <a
+            href="tel:+15702678864"
+            aria-label="Call 1-570-267-8864"
           >
+            <img
+              src="/content/NumberClassicPNGTransparent.png"
+              alt="Mann Muscles contact number"
+              class="h-10 sm:h-12 w-auto"
+              loading="lazy"
+              decoding="async"
+            >
+          </a>
         </div>
 
         <div class="mb-2 flex items-center justify-center gap-1">

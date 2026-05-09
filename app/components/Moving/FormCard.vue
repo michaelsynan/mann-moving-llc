@@ -41,6 +41,11 @@ const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
 const submitSuccess = ref(false)
 
+const submitValidationError = ref<string | null>(null)
+
+const honeypotWebsite = ref('')
+const formStartedAt = ref<number | null>(null)
+
 const DUPLICATE_SUBMIT_TTL_SECONDS = 60 * 60 * 24 * 14
 const DUPLICATE_STORAGE_KEY = 'mm-moving-submit-at'
 const duplicateSubmitMessage = "It looks like you've already submitted some information. Please contact us to discuss"
@@ -51,6 +56,41 @@ const movingSubmittedAt = useCookie<string | undefined>(DUPLICATE_STORAGE_KEY, {
 })
 
 const hasRecentSubmission = computed(() => Boolean(movingSubmittedAt.value))
+
+function describeError(err: unknown): string {
+  if (err instanceof Error) {
+    const anyErr = err as any
+    const data = anyErr?.data
+    if (data && typeof data === 'object') {
+      const message = (data as { error?: unknown; message?: unknown }).error
+        ?? (data as { error?: unknown; message?: unknown }).message
+      if (typeof message === 'string' && message.trim()) {
+        return message
+      }
+    }
+
+    return err.message
+  }
+
+  if (typeof err === 'string') {
+    return err
+  }
+
+  if (err && typeof err === 'object') {
+    const maybeMessage = (err as { message?: unknown }).message
+    if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+      return maybeMessage
+    }
+
+    try {
+      return JSON.stringify(err)
+    } catch {
+      return String(err)
+    }
+  }
+
+  return String(err)
+}
 
 function markMovingSubmission() {
   const timestamp = new Date().toISOString()
@@ -64,6 +104,10 @@ function markMovingSubmission() {
 onMounted(() => {
   if (!import.meta.client) {
     return
+  }
+
+  if (formStartedAt.value == null) {
+    formStartedAt.value = Date.now()
   }
 
   const localMarker = localStorage.getItem(DUPLICATE_STORAGE_KEY)
@@ -142,6 +186,7 @@ const state = reactive({
   name: '',
   phone: '',
   email: '',
+  moveDate: '',
   pickup: emptyAddress(),
   dropoff: emptyAddress(),
   additionalStops: [] as Address[],
@@ -150,6 +195,17 @@ const state = reactive({
   over250lbsDetails: '',
   notes: ''
 })
+
+function onMoveDateClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) {
+    return
+  }
+
+  // Chromium-only: opens the native picker programmatically.
+  const anyTarget = target as HTMLInputElement & { showPicker?: () => void }
+  anyTarget.showPicker?.()
+}
 
 function normalizePhone(input: string) {
   const digitsOnly = input.replace(/\D/g, '')
@@ -244,6 +300,10 @@ function validate(formState: typeof state) {
     errors.push({ name: 'email', message: 'Enter a valid email' })
   }
 
+  if (!formState.moveDate.trim()) {
+    errors.push({ name: 'moveDate', message: 'Move date is required' })
+  }
+
   const validateState = (path: string, value: string) => {
     if (!usStateValueSet.has(value)) {
       errors.push({ name: path, message: 'Select a state' })
@@ -260,7 +320,12 @@ function validate(formState: typeof state) {
   return errors
 }
 
+function onFormError() {
+  submitValidationError.value = 'Please fill in all required fields above.'
+}
+
 async function onSubmit() {
+  submitValidationError.value = null
   submitError.value = null
   submitSuccess.value = false
 
@@ -276,6 +341,10 @@ async function onSubmit() {
   isSubmitting.value = true
 
   try {
+    if (formStartedAt.value == null) {
+      formStartedAt.value = Date.now()
+    }
+
     if (!token.value) {
       submitError.value = 'Please complete the Turnstile challenge.'
       return
@@ -300,6 +369,7 @@ async function onSubmit() {
       `Name: ${state.name}`,
       `Phone: ${state.phone}`,
       `Email: ${state.email}`,
+      `Move date: ${state.moveDate || 'N/A'}`,
       `Additional stops: ${state.additionalStops.length
         ? state.additionalStops.map((s) => formatAddressSummary(s).join(', ')).join(' | ')
         : 'None'}`,
@@ -317,6 +387,8 @@ async function onSubmit() {
         phone: state.phone,
         service: 'Moving',
         zipcode: state.pickup.zip,
+        website: honeypotWebsite.value,
+        startedAt: formStartedAt.value,
         message: [
           `Pickup: ${addressFrom}`,
           `Dropoff: ${addressTo}`,
@@ -332,35 +404,23 @@ async function onSubmit() {
     }
 
     try {
-      await $fetch<{ status: string, error?: string }>('/api/sms', {
-        method: 'POST',
-        body: {
-          name: state.name,
-          email: state.email,
-          phone: state.phone,
-          service: 'Moving',
-          zipcode: state.pickup.zip,
-          message: `Pickup: ${addressFrom} | Dropoff: ${addressTo}`
-        }
-      })
+      const { error } = await (supabase as any)
+        .from('jobs')
+        .insert({
+          job_type: 'moving',
+          address_from: addressFrom,
+          address_to: addressTo,
+          scheduled_date: state.moveDate || null,
+          status: 'new',
+          notes
+        })
+
+      if (error) {
+        throw error
+      }
     } catch (err) {
-      // Non-fatal: still allow the moving request to be recorded.
-      console.warn('SMS notification failed', err)
-    }
-
-    const { error } = await (supabase as any)
-      .from('jobs')
-      .insert({
-        job_type: 'moving',
-        address_from: addressFrom,
-        address_to: addressTo,
-        scheduled_date: null,
-        status: 'new',
-        notes
-      })
-
-    if (error) {
-      throw error
+      // Non-fatal: the customer request already reached us via email.
+      console.warn('Supabase job insert failed', describeError(err))
     }
 
     markMovingSubmission()
@@ -369,6 +429,7 @@ async function onSubmit() {
     state.name = ''
     state.phone = ''
     state.email = ''
+    state.moveDate = ''
     state.pickup = emptyAddress()
     state.dropoff = emptyAddress()
     state.additionalStops = []
@@ -382,8 +443,10 @@ async function onSubmit() {
     showStopDraft.value = false
 
     token.value = undefined
+    honeypotWebsite.value = ''
+    formStartedAt.value = Date.now()
   } catch (err) {
-    submitError.value = err instanceof Error ? err.message : String(err)
+    submitError.value = describeError(err)
   } finally {
     isSubmitting.value = false
   }
@@ -394,7 +457,7 @@ async function onSubmit() {
   <UCard class="mx-auto w-full max-w-2xl bg-primary/5 dark:bg-primary/10">
     <template #header>
       <div class="space-y-1">
-        <p class="text-sm text-muted">Request moving help</p>
+        <!-- <p class="text-sm text-muted">Request moving help</p> -->
         <h2
           class="text-[clamp(1.35rem,2.8vw,1.9rem)] font-black leading-tight tracking-tight text-highlighted uppercase whitespace-nowrap truncate"
         >Tell us about your move</h2>
@@ -405,7 +468,22 @@ async function onSubmit() {
       :state="state"
       :validate="validate"
       @submit="onSubmit"
+      @error="onFormError"
     >
+      <div
+        aria-hidden="true"
+        class="sr-only"
+      >
+        <label for="mm-website">Website</label>
+        <input
+          id="mm-website"
+          v-model="honeypotWebsite"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+        >
+      </div>
       <UAlert
         v-if="submitSuccess"
         color="success"
@@ -438,7 +516,7 @@ async function onSubmit() {
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UFormField
-          label="Name"
+          label="Name *"
           name="name"
           size="lg"
         >
@@ -450,7 +528,7 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          label="Phone"
+          label="Phone *"
           name="phone"
           size="lg"
         >
@@ -465,7 +543,7 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          label="Email"
+          label="Email *"
           name="email"
           size="lg"
           class="sm:col-span-2"
@@ -477,6 +555,21 @@ async function onSubmit() {
             type="email"
             inputmode="email"
             autocomplete="email"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Move date *"
+          name="moveDate"
+          size="lg"
+          class="sm:col-span-2"
+        >
+          <UInput
+            v-model="state.moveDate"
+            type="date"
+            :ui="{ base: 'mm-native-date-input' }"
+            @click="onMoveDateClick"
+            class="w-full"
           />
         </UFormField>
 
@@ -526,7 +619,7 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          label="State"
+          label="State *"
           name="pickup.state"
           size="lg"
         >
@@ -599,7 +692,7 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          label="State"
+          label="State *"
           name="dropoff.state"
           size="lg"
         >
@@ -886,6 +979,15 @@ async function onSubmit() {
         :options="turnstileOptions"
         class="pt-6"
       />
+      <UAlert
+        v-if="submitValidationError"
+        color="warning"
+        variant="subtle"
+        class="mt-4"
+        :description="submitValidationError"
+        title="Check required fields"
+        icon="i-lucide-info"
+      />
       <div class="mt-8 flex items-center justify-center">
         <UButton
           type="submit"
@@ -893,9 +995,26 @@ async function onSubmit() {
           size="xl"
           :loading="isSubmitting"
           :disabled="isSubmitting || hasRecentSubmission"
-          class="w-full sm:w-auto"
+          class="w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >Request a quote</UButton>
       </div>
     </UForm>
   </UCard>
 </template>
+
+<style>
+/*
+  Nuxt UI/Tailwind form styles can apply `appearance: none`, which hides the
+  native calendar indicator in Chromium for <input type="date">.
+  This is intentionally scoped to this component.
+*/
+.mm-native-date-input {
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.mm-native-date-input::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+}
+</style>

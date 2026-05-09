@@ -1,0 +1,228 @@
+export default defineEventHandler(async (event) => {
+  if (getMethod(event) !== "POST") {
+    setResponseStatus(event, 405);
+    return { status: "error", error: "Method Not Allowed" };
+  }
+
+  const config = useRuntimeConfig(event);
+
+  if (!config.resend?.apiKey) {
+    setResponseStatus(event, 500);
+    return { status: "error", error: "Missing Resend API key" };
+  }
+
+  const secretKey = config.turnstile?.secretKey;
+  if (!secretKey) {
+    setResponseStatus(event, 500);
+    return { status: "error", error: "Missing Turnstile secret key" };
+  }
+
+  const escapeHtml = (value: unknown) => {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  };
+
+  const parts = await readMultipartFormData(event).catch(() => null);
+  if (!parts) {
+    setResponseStatus(event, 400);
+    return { status: "error", error: "Invalid form data" };
+  }
+
+  const decodePartData = (data: unknown): string => {
+    if (typeof data === "string") {
+      return data;
+    }
+
+    // h3 typically returns Buffer for both fields and files.
+    // In some runtimes it may be Uint8Array.
+    if (data && typeof data === "object") {
+      if (typeof Buffer !== "undefined" && Buffer.isBuffer(data)) {
+        return data.toString("utf8");
+      }
+
+      if (data instanceof Uint8Array) {
+        try {
+          return new TextDecoder("utf-8").decode(data);
+        } catch {
+          return Buffer.from(data).toString("utf8");
+        }
+      }
+    }
+
+    return "";
+  };
+
+  const getField = (name: string) => {
+    const part = parts.find((p) => p.name === name && !p.filename);
+    return part ? decodePartData(part.data) : "";
+  };
+
+  // Bot mitigation (low-friction): honeypot + minimum time-to-submit.
+  const website = getField("website").trim();
+  if (website) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Spam detected" };
+  }
+
+  const startedAt = Number.parseInt(getField("startedAt").trim(), 10);
+  if (!Number.isFinite(startedAt)) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Please try again." };
+  }
+
+  const elapsedMs = Date.now() - startedAt;
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 2500) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Please wait a moment and try again." };
+  }
+
+  const token = getField("token").trim();
+  if (!token) {
+    setResponseStatus(event, 422);
+    return { status: "error", error: "Missing Turnstile token" };
+  }
+
+  // Verify Turnstile
+  const form = new URLSearchParams();
+  form.set("secret", String(secretKey));
+  form.set("response", token);
+
+  let turnstileResult: { success: boolean; "error-codes"?: string[] } | null =
+    null;
+  try {
+    turnstileResult = await $fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: form,
+      },
+    );
+  } catch {
+    setResponseStatus(event, 502);
+    return { status: "error", error: "Turnstile verify request failed" };
+  }
+
+  if (!turnstileResult?.success) {
+    setResponseStatus(event, 422);
+    const codes = Array.isArray((turnstileResult as any)?.["error-codes"])
+      ? (turnstileResult as any)["error-codes"]
+      : undefined;
+    return {
+      status: "error",
+      error: "Turnstile verification failed",
+      errorCodes: codes,
+    };
+  }
+
+  const name = getField("name").trim();
+  const email = getField("email").trim();
+  const phone = getField("phone").trim();
+  const zipcode = getField("zipcode").trim();
+  const message = getField("message").trim();
+  const service = (getField("service").trim() || "Junk Removal").trim();
+
+  if (!name || !email || !message) {
+    setResponseStatus(event, 400);
+    return { status: "error", error: "Missing required fields" };
+  }
+
+  const photos = parts.filter(
+    (p) => p.name === "photos" && p.filename && p.data,
+  );
+
+  // Try to stay under common serverless body limits (Vercel can be strict).
+  // Also, Resend limits attachments to 40mb per email.
+  const MAX_TOTAL_ATTACH_BYTES = 3_500_000;
+  const totalBytes = photos.reduce((sum, p) => {
+    const data = p.data as unknown;
+    if (typeof Buffer !== "undefined" && Buffer.isBuffer(data)) {
+      return sum + data.byteLength;
+    }
+    if (data instanceof Uint8Array) {
+      return sum + data.byteLength;
+    }
+    return sum;
+  }, 0);
+
+  if (totalBytes > MAX_TOTAL_ATTACH_BYTES) {
+    setResponseStatus(event, 413);
+    return {
+      status: "error",
+      error:
+        "Photos are too large to email directly. Please upload fewer/smaller photos.",
+    };
+  }
+
+  const attachments = photos
+    .map((p) => {
+      const data = p.data as unknown;
+      const content =
+        typeof Buffer !== "undefined" && Buffer.isBuffer(data)
+          ? data
+          : data instanceof Uint8Array
+            ? Buffer.from(data)
+            : null;
+
+      if (!content) {
+        return null;
+      }
+
+      return {
+        filename: p.filename as string,
+        content,
+      };
+    })
+    .filter(Boolean) as Array<{ filename: string; content: Buffer }>;
+
+  const resend = useResend();
+
+  try {
+    const result = await resend.emails.send({
+      from: "Mann Muscles LLC <no-reply@formworkstudios.xyz>",
+      to: ["hello@formworkstudios.com"],
+      bcc: ["mikesynan@gmail.com"],
+      subject: `New ${service} Request from ${name}`,
+      attachments: attachments.length ? attachments : undefined,
+      html: `
+        <h2>New ${escapeHtml(service)} Request</h2>
+        <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(phone || "Not provided")}</p>
+        <p><strong>Service Type:</strong> ${escapeHtml(service)}</p>
+        <p><strong>Zip Code:</strong> ${escapeHtml(zipcode || "Not provided")}</p>
+        <p><strong>Message:</strong></p>
+        <pre style="white-space:pre-wrap;word-break:break-word">${escapeHtml(message)}</pre>
+        ${attachments.length ? `<p><strong>Photos attached:</strong> ${attachments.length}</p>` : "<p><strong>Photos:</strong> None</p>"}
+      `,
+      text: `
+New ${service} Request
+
+Name: ${name}
+Email: ${email}
+Phone: ${phone || "Not provided"}
+Service Type: ${service}
+Zip Code: ${zipcode || "Not provided"}
+
+Message:
+${message}
+
+Photos attached: ${attachments.length}
+      `.trim(),
+    });
+
+    return { status: "sent", result };
+  } catch (error) {
+    setResponseStatus(event, 500);
+    return {
+      status: "error",
+      error: error instanceof Error ? error.message : "Failed to send email",
+    };
+  }
+});

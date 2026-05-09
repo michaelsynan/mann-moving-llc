@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "@nuxt/ui",
     "@nuxt/fonts",
+    "@nuxt/image",
     "@nuxt/scripts",
     "@nuxtjs/turnstile",
     "@nuxtjs/color-mode",
@@ -41,14 +42,6 @@ export default defineNuxtConfig({
 
     // Optional: email-to-SMS gateway recipient (e.g. Verizon: 10digits@vtext.com)
     contactSmsTo: env.NUXT_CONTACT_SMS_TO || env.CONTACT_SMS_TO,
-
-    // Optional: Twilio SMS (server-only)
-    twilio: {
-      accountSid: env.TWILIO_ACCOUNT_SID,
-      authToken: env.TWILIO_AUTH_TOKEN,
-      fromNumber: env.TWILIO_FROM_NUMBER,
-      toNumber: env.TWILIO_TO_NUMBER,
-    },
   },
 
   ui: {

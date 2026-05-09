@@ -7,14 +7,18 @@
 <template>
   <div class="space-y-6">
     <div class="relative rounded-lg border border-default overflow-hidden">
-      <img
+      <NuxtImg
         src="/mann-group.jpg"
         alt="Mann Muscles LLC crew group photo"
-        class="h-112 w-full object-cover object-top sm:h-136 lg:h-160"
+        class="block w-full h-auto"
         loading="lazy"
         decoding="async"
-      >
-
+        width="1365"
+        height="768"
+        format="webp"
+        sizes="100vw sm:80vw lg:60vw"
+        :placeholder="[160, 90]"
+      />
       <div
         aria-hidden="true"
         class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.45))] dark:bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.65))]"

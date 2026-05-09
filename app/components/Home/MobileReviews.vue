@@ -157,7 +157,7 @@ function onPointerUp(event: PointerEvent) {
       </div>
     </div>
 
-    <div class="mt-6 w-screen mx-[calc(50%-50vw)]">
+    <div class="mt-6 w-svw mx-[calc(50%-50svw)]">
       <div
         ref="scroller"
         class="review-scroller no-scrollbar overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"
@@ -192,18 +192,6 @@ function onPointerUp(event: PointerEvent) {
                     :name="star <= review.stars ? 'i-mdi-star' : 'i-mdi-star-outline'"
                     class="size-5"
                   />
-                </div>
-
-                <div
-                  v-else
-                  class="inline-flex items-center gap-2 rounded-full border border-default bg-default px-3 py-1 text-sm font-semibold text-highlighted"
-                  aria-label="Recommends"
-                >
-                  <UIcon
-                    name="i-lucide-badge-check"
-                    class="size-4 text-primary"
-                  />
-                  <span>{{ review.stars }}</span>
                 </div>
               </div>
 

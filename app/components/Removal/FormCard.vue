@@ -2,9 +2,54 @@
   setup
   lang="ts"
 >
-import { onBeforeUnmount, watch } from 'vue'
+import { onBeforeUnmount, onMounted, watch } from 'vue'
 
 const token = ref()
+const turnstileKey = ref(0)
+const supabase = useSupabaseClient()
+const isSubmitting = ref(false)
+const submitError = ref<string | null>(null)
+const submitSuccess = ref(false)
+
+const submitValidationError = ref<string | null>(null)
+
+const honeypotWebsite = ref('')
+const formStartedAt = ref<number | null>(null)
+
+const DUPLICATE_SUBMIT_TTL_SECONDS = 60 * 60 * 24 * 14
+const DUPLICATE_STORAGE_KEY = 'mm-removal-submit-at'
+const duplicateSubmitMessage = "It looks like you've already submitted some information. Please contact us to discuss"
+
+const removalSubmittedAt = useCookie<string | undefined>(DUPLICATE_STORAGE_KEY, {
+  maxAge: DUPLICATE_SUBMIT_TTL_SECONDS,
+  sameSite: 'lax'
+})
+
+const hasRecentSubmission = computed(() => Boolean(removalSubmittedAt.value))
+
+function markRemovalSubmission() {
+  const timestamp = new Date().toISOString()
+  removalSubmittedAt.value = timestamp
+
+  if (import.meta.client) {
+    localStorage.setItem(DUPLICATE_STORAGE_KEY, timestamp)
+  }
+}
+
+onMounted(() => {
+  if (!import.meta.client) {
+    return
+  }
+
+  if (formStartedAt.value == null) {
+    formStartedAt.value = Date.now()
+  }
+
+  const localMarker = localStorage.getItem(DUPLICATE_STORAGE_KEY)
+  if (localMarker && !removalSubmittedAt.value) {
+    removalSubmittedAt.value = localMarker
+  }
+})
 const turnstileOptions = {
   'error-callback': (error: unknown) => {
     if (!import.meta.client) {
@@ -37,6 +82,70 @@ type Address = {
   city: string
   state: string
   zip: string
+}
+
+function describeError(err: unknown): string {
+  if (err instanceof Error) {
+    const anyErr = err as any
+    const data = anyErr?.data
+    if (data && typeof data === 'object') {
+      const message = (data as { error?: unknown; message?: unknown }).error
+        ?? (data as { error?: unknown; message?: unknown }).message
+      const errorCodes = (data as { errorCodes?: unknown })?.errorCodes
+      const codes = Array.isArray(errorCodes) ? errorCodes.filter((c): c is string => typeof c === 'string' && c.trim().length > 0) : []
+
+      if (typeof message === 'string' && message.trim()) {
+        return codes.length ? `${message} (codes: ${codes.join(', ')})` : message
+      }
+    }
+    return err.message
+  }
+
+  if (typeof err === 'string') {
+    return err
+  }
+
+  if (err && typeof err === 'object') {
+    const anyErr = err as any
+    const data = anyErr?.data
+    if (data && typeof data === 'object') {
+      const message = (data as { error?: unknown; message?: unknown }).error
+        ?? (data as { error?: unknown; message?: unknown }).message
+      const errorCodes = (data as { errorCodes?: unknown })?.errorCodes
+      const codes = Array.isArray(errorCodes) ? errorCodes.filter((c): c is string => typeof c === 'string' && c.trim().length > 0) : []
+
+      if (typeof message === 'string' && message.trim()) {
+        return codes.length ? `${message} (codes: ${codes.join(', ')})` : message
+      }
+    }
+
+    const maybeMessage = (err as { message?: unknown }).message
+    if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+      return maybeMessage
+    }
+
+    try {
+      return JSON.stringify(err)
+    } catch {
+      return String(err)
+    }
+  }
+
+  return String(err)
+}
+
+function getErrorData(err: unknown): Record<string, unknown> | null {
+  if (!err || typeof err !== 'object') {
+    return null
+  }
+
+  const anyErr = err as any
+  const data = anyErr?.data
+  if (data && typeof data === 'object') {
+    return data as Record<string, unknown>
+  }
+
+  return null
 }
 
 const usStateOptions = [
@@ -103,6 +212,19 @@ function emptyAddress(): Address {
     state: '',
     zip: ''
   }
+}
+
+function formatAddressSummary(address: Address): string[] {
+  const street = address.street.trim()
+  const apt = address.apt.trim()
+  const city = address.city.trim()
+  const stateValue = address.state.trim()
+  const zip = address.zip.trim()
+
+  const line2Parts = [city, stateValue].filter(Boolean).join(', ')
+  const line2 = [line2Parts, zip].filter(Boolean).join(' ')
+
+  return [street, apt, line2].filter(Boolean)
 }
 
 const state = reactive({
@@ -663,26 +785,147 @@ watch(
   }
 )
 
-function onSubmit() {
-  // Placeholder: wire up to email/CRM later.
-  const selected = state.photos ?? []
-  const uploadFiles = selected.map(f => resizeResultsByKey.value[getFileKey(f)]?.file ?? f)
-  console.log('Junk removal form submit', {
-    ...state,
-    photos: uploadFiles,
-    photoUploadDebug: selected.map((f) => {
-      const result = resizeResultsByKey.value[getFileKey(f)]
-      const upload = result?.file ?? f
-      return {
-        name: f.name,
-        selectedBytes: f.size,
-        uploadBytes: upload.size,
-        selectedType: f.type,
-        uploadType: upload.type,
-        action: result?.action ?? 'pending'
-      }
+async function onSubmit() {
+  submitValidationError.value = null
+  submitError.value = null
+  submitSuccess.value = false
+
+  if (hasRecentSubmission.value) {
+    submitError.value = duplicateSubmitMessage
+    return
+  }
+
+  if (isSubmitting.value) {
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    if (formStartedAt.value == null) {
+      formStartedAt.value = Date.now()
+    }
+
+    const tokenValue = typeof token.value === 'string' ? token.value.trim() : ''
+    if (!tokenValue) {
+      submitError.value = 'Please complete the Turnstile challenge.'
+      return
+    }
+
+    const addressFrom = formatAddressSummary(state.serviceAddress).join(', ')
+    const selected = state.photos ?? []
+    const uploadFiles = selected.map((f) => resizeResultsByKey.value[getFileKey(f)]?.file ?? f)
+    const photosSummary = uploadFiles.length
+      ? uploadFiles
+        .map((file) => {
+          const description = state.photoDescriptions[getFileKey(file)]?.trim()
+          return `- ${file.name} (${formatBytes(file.size)})${description ? ` — ${description}` : ''}`
+        })
+        .join('\n')
+      : 'None'
+
+    const notes = [
+      `Name: ${state.name}`,
+      `Phone: ${state.phone}`,
+      `Email: ${state.email}`,
+      `Service date: ${state.serviceDate || 'N/A'}`,
+      `Service address: ${addressFrom || 'N/A'}`,
+      `Notes: ${state.notes || 'N/A'}`,
+      '',
+      'Photos:',
+      photosSummary
+    ].join('\n')
+
+    const form = new FormData()
+    form.set('token', tokenValue)
+    form.set('website', honeypotWebsite.value)
+    form.set('startedAt', String(formStartedAt.value))
+    form.set('name', state.name)
+    form.set('email', state.email)
+    form.set('phone', state.phone)
+    form.set('service', 'Junk Removal')
+    form.set('zipcode', state.serviceAddress.zip)
+    form.set('message', notes)
+    for (const file of uploadFiles) {
+      form.append('photos', file, file.name)
+    }
+
+    const emailResponse = await $fetch<{ status: string, error?: string, errorCodes?: string[] }>('/api/removal-request', {
+      method: 'POST',
+      body: form
     })
-  })
+
+    if (emailResponse?.status !== 'sent') {
+      submitError.value = emailResponse?.error || 'Could not send email. Please try again.'
+      token.value = undefined
+      turnstileKey.value += 1
+      return
+    }
+
+    try {
+      const { error } = await (supabase as any)
+        .from('jobs')
+        .insert({
+          job_type: 'removal',
+          address_from: addressFrom,
+          address_to: null,
+          scheduled_date: state.serviceDate || null,
+          status: 'new',
+          notes
+        })
+
+      if (error) {
+        throw error
+      }
+    } catch (err) {
+      // Non-fatal: the customer request already reached us via email.
+      console.warn('Supabase job insert failed', describeError(err))
+    }
+
+    submitSuccess.value = true
+    markRemovalSubmission()
+
+    state.name = ''
+    state.phone = ''
+    state.email = ''
+    state.serviceAddress = emptyAddress()
+    state.serviceDate = ''
+    state.notes = ''
+    state.photos = null
+    state.photoDescriptions = {}
+    resizeResultsByKey.value = {}
+
+    token.value = undefined
+    turnstileKey.value += 1
+    honeypotWebsite.value = ''
+    formStartedAt.value = Date.now()
+  } catch (err) {
+    const data = getErrorData(err)
+    if (import.meta.client && data) {
+      console.warn('[removal-request] submit failed', data)
+    }
+
+    const message = typeof data?.error === 'string'
+      ? data.error
+      : (typeof data?.message === 'string' ? data.message : null)
+
+    const errorCodes = Array.isArray((data as any)?.errorCodes)
+      ? (data as any).errorCodes.filter((c: unknown): c is string => typeof c === 'string' && c.trim().length > 0)
+      : []
+
+    const isTurnstileFailure = message?.toLowerCase().includes('turnstile')
+      || errorCodes.length > 0
+
+    if (isTurnstileFailure) {
+      // Token is likely expired/duplicate; force user to re-run the challenge.
+      token.value = undefined
+      turnstileKey.value += 1
+    }
+
+    submitError.value = describeError(err)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 function validate(formState: typeof state) {
@@ -706,15 +949,31 @@ function validate(formState: typeof state) {
 
   return errors
 }
+
+function onFormError() {
+  submitValidationError.value = 'Please fill in all required fields above.'
+}
+
+function onServiceDateClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) {
+    return
+  }
+
+  // Chromium-only: opens the native picker programmatically.
+  // This makes clicking into the field behave like clicking the calendar icon.
+  const anyTarget = target as HTMLInputElement & { showPicker?: () => void }
+  anyTarget.showPicker?.()
+}
 </script>
 
 <template>
   <UCard class="mx-auto w-full max-w-2xl bg-primary/5 dark:bg-primary/10">
     <template #header>
       <div class="space-y-1">
-        <p class="text-sm text-muted">
+        <!-- <p class="text-sm text-muted">
           Request removal / clean out
-        </p>
+        </p> -->
         <h2
           class="text-[clamp(1.35rem,2.8vw,1.9rem)] font-black leading-tight tracking-tight text-highlighted uppercase whitespace-nowrap truncate"
         >
@@ -727,10 +986,55 @@ function validate(formState: typeof state) {
       :state="state"
       :validate="validate"
       @submit="onSubmit"
+      @error="onFormError"
     >
+      <div
+        aria-hidden="true"
+        class="sr-only"
+      >
+        <label for="mm-removal-website">Website</label>
+        <input
+          id="mm-removal-website"
+          v-model="honeypotWebsite"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+        >
+      </div>
+      <UAlert
+        v-if="submitSuccess"
+        color="success"
+        variant="subtle"
+        class="mb-4"
+        title="Request submitted"
+        description="Thanks! Your junk removal request has been submitted. We'll reach out soon."
+        icon="i-lucide-check"
+      />
+
+      <UAlert
+        v-if="submitError"
+        color="error"
+        variant="subtle"
+        class="mb-4"
+        title="Could not submit request"
+        :description="submitError"
+        icon="i-lucide-alert-triangle"
+      />
+
+      <UAlert
+        v-if="hasRecentSubmission && !submitSuccess"
+        color="warning"
+        variant="subtle"
+        class="mb-4"
+        title="Already submitted"
+        :description="duplicateSubmitMessage"
+        icon="i-lucide-info"
+      />
+
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UFormField
-          label="Name"
+          label="Name *"
           name="name"
           size="lg"
         >
@@ -742,7 +1046,7 @@ function validate(formState: typeof state) {
         </UFormField>
 
         <UFormField
-          label="Phone"
+          label="Phone *"
           name="phone"
           size="lg"
         >
@@ -757,7 +1061,7 @@ function validate(formState: typeof state) {
         </UFormField>
 
         <UFormField
-          label="Email"
+          label="Email *"
           name="email"
           size="lg"
         >
@@ -779,6 +1083,8 @@ function validate(formState: typeof state) {
           <UInput
             v-model="state.serviceDate"
             type="date"
+            :ui="{ base: 'mm-native-date-input' }"
+            @click="onServiceDateClick"
             class="w-full"
           />
         </UFormField>
@@ -829,7 +1135,7 @@ function validate(formState: typeof state) {
         </UFormField>
 
         <UFormField
-          label="State"
+          label="State *"
           name="serviceAddress.state"
           size="lg"
         >
@@ -875,6 +1181,7 @@ function validate(formState: typeof state) {
             layout="list"
             label="Add photos"
             description="Photos help us price accurately. Add one photo per item if possible."
+            :ui="{ base: 'cursor-pointer' }"
             class="w-full min-h-48"
           >
             <template #files-top>
@@ -934,16 +1241,28 @@ function validate(formState: typeof state) {
         </UFormField>
       </div>
       <NuxtTurnstile
+        :key="turnstileKey"
         v-model="token"
         :options="turnstileOptions"
         class="pt-6"
+      />
+      <UAlert
+        v-if="submitValidationError"
+        color="warning"
+        variant="subtle"
+        class="mt-4"
+        :description="submitValidationError"
+        title="Check required fields"
+        icon="i-lucide-info"
       />
       <div class="mt-8 flex items-center justify-center">
         <UButton
           type="submit"
           color="primary"
           size="xl"
-          class="w-full sm:w-auto"
+          :loading="isSubmitting"
+          :disabled="isSubmitting || hasRecentSubmission"
+          class="w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
           Request a quote
         </UButton>
@@ -951,3 +1270,20 @@ function validate(formState: typeof state) {
     </UForm>
   </UCard>
 </template>
+
+<style>
+/*
+  Nuxt UI/Tailwind form styles can apply `appearance: none`, which hides the
+  native calendar indicator in Chromium for <input type="date">.
+  This is intentionally scoped to this single input.
+*/
+.mm-native-date-input {
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.mm-native-date-input::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+}
+</style>

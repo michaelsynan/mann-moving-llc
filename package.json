@@ -14,6 +14,7 @@
     "@iconify-json/lucide": "^1.2.96",
     "@iconify-json/simple-icons": "^1.2.72",
     "@nuxt/fonts": "0.14.0",
+    "@nuxt/image": "^2.0.0",
     "@nuxt/scripts": "0.13.2",
     "@nuxt/ui": "^4.5.1",
     "@nuxtjs/supabase": "2.0.4",
@@ -21,7 +22,6 @@
     "nuxt": "^4.3.1",
     "nuxt-resend": "^0.0.2",
     "tailwindcss": "^4.2.1",
-    "twilio": "^5.13.1",
     "vue": "^3.5.31",
     "vue-router": "^5.0.4"
   },

@@ -247,8 +247,9 @@ const PHOTO_REENCODE_MIN_BYTES = 700_000
 // Keep resized files separate from `state.photos`.
 // Mutating the `UFileUpload` v-model can cause feedback loops/glitching.
 const resizeResultsByKey = ref<Record<string, ResizeResult>>({})
-const isProcessingPhotos = ref(false)
 const photosProcessRunId = ref(0)
+
+const previewUrlByKey = ref<Record<string, string>>({})
 
 type ResizeResult = {
   file: File
@@ -315,6 +316,15 @@ onBeforeUnmount(() => {
     }
   }
   resizeWorker.value = null
+
+  for (const url of Object.values(previewUrlByKey.value)) {
+    try {
+      URL.revokeObjectURL(url)
+    } catch {
+      // ignore
+    }
+  }
+  previewUrlByKey.value = {}
 
   for (const [, pending] of resizeWorkerPending) {
     pending.reject(new Error('Resize worker terminated'))
@@ -423,36 +433,6 @@ async function resizeImageFileInWorker(
   }
 }
 
-function getUploadFile(original: File) {
-  return resizeResultsByKey.value[getFileKey(original)]?.file ?? original
-}
-
-function getResizeResult(original: File) {
-  return resizeResultsByKey.value[getFileKey(original)]
-}
-
-function getResizeSummary(original: File) {
-  const result = getResizeResult(original)
-  if (!result) {
-    return isProcessingPhotos.value ? 'Processing…' : 'Pending'
-  }
-
-  const actionLabel = result.action === 'kept'
-    ? 'Kept'
-    : (result.action === 'reencoded' ? 'Re-encoded' : 'Resized')
-
-  const hasDims = result.srcWidth > 0
-    && result.srcHeight > 0
-    && result.dstWidth > 0
-    && result.dstHeight > 0
-
-  const base = hasDims
-    ? `${actionLabel} ${result.srcWidth}x${result.srcHeight} → ${result.dstWidth}x${result.dstHeight}`
-    : actionLabel
-
-  return PHOTO_RESIZE_DEBUG ? `${base} (${result.processedBy})` : base
-}
-
 function formatBytes(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB'] as const
@@ -480,6 +460,37 @@ function isValidEmail(input: string) {
 
 function getFileKey(file: File) {
   return `${file.name}::${file.size}::${file.lastModified}`
+}
+
+function syncPreviewUrls(files: File[] | null | undefined) {
+  if (import.meta.server) {
+    return
+  }
+
+  const nextFiles = files ?? []
+  const nextKeys = new Set(nextFiles.map(getFileKey))
+
+  for (const [key, url] of Object.entries(previewUrlByKey.value)) {
+    if (!nextKeys.has(key)) {
+      try {
+        URL.revokeObjectURL(url)
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const nextUrls: Record<string, string> = {}
+  for (const file of nextFiles) {
+    const key = getFileKey(file)
+    nextUrls[key] = previewUrlByKey.value[key] ?? URL.createObjectURL(file)
+  }
+
+  previewUrlByKey.value = nextUrls
+}
+
+function getPreviewUrl(file: File) {
+  return previewUrlByKey.value[getFileKey(file)]
 }
 
 function yieldToBrowser() {
@@ -641,6 +652,8 @@ watch(
       return
     }
 
+    syncPreviewUrls(files)
+
     const runId = ++photosProcessRunId.value
     const next = files ?? []
 
@@ -648,11 +661,8 @@ watch(
       // No photos: ensure descriptions are also cleared
       state.photoDescriptions = {}
       resizeResultsByKey.value = {}
-      isProcessingPhotos.value = false
       return
     }
-
-    isProcessingPhotos.value = true
 
     // Rebuild descriptions to drop entries for removed files (no dynamic delete).
     const nextDescriptions: Record<string, string> = {}
@@ -744,6 +754,12 @@ watch(
             )
           }
 
+          console.log(
+            '[Removal/FormCard] Upload transform',
+            `${file.name}: ${formatBytes(file.size)} → ${formatBytes(result.file.size)}`,
+            `${result.action} (${result.processedBy})`
+          )
+
           nextResultsByKey[originalKey] = result
         } catch (error) {
           if (PHOTO_RESIZE_DEBUG) {
@@ -776,10 +792,6 @@ watch(
     } finally {
       if (didOpenGroup) {
         console.groupEnd()
-      }
-
-      if (runId === photosProcessRunId.value) {
-        isProcessingPhotos.value = false
       }
     }
   }
@@ -1184,23 +1196,37 @@ function onServiceDateClick(event: MouseEvent) {
             :ui="{ base: 'cursor-pointer' }"
             class="w-full min-h-48"
           >
-            <template #files-top>
-              <p
-                v-if="isProcessingPhotos"
-                class="text-xs text-muted"
-              >
-                Processing photos… upload sizes/status will update.
-              </p>
+            <!--
+              Simplified UX: hide on-screen resize/worker/status text.
+              Resize details are still logged to the console.
+            -->
+
+            <template #file-leading="{ file }">
+              <div class="size-14 shrink-0 overflow-hidden rounded-md border border-default bg-elevated/20">
+                <img
+                  v-if="getPreviewUrl(file)"
+                  :src="getPreviewUrl(file)"
+                  alt=""
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                >
+                <div
+                  v-else
+                  class="flex size-full items-center justify-center"
+                >
+                  <UIcon
+                    name="i-lucide-image"
+                    class="size-6 text-muted"
+                  />
+                </div>
+              </div>
             </template>
 
             <template #file-name="{ file }">
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-highlighted truncate">
                   {{ file.name }}
-                </p>
-                <p class="mt-1 text-xs text-muted">
-                  Selected: {{ formatBytes(file.size) }} · Will upload as: {{ formatBytes(getUploadFile(file).size) }} ·
-                  {{ getResizeSummary(file) }}
                 </p>
 
                 <p class="mt-1 text-xs text-muted">

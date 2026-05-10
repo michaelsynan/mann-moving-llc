@@ -42,32 +42,33 @@ export const reviews: Review[] = [
       "Matt and his crew are the best. We have a commercial furniture distribution company that relies heavily on professional movers. We work in all 50 states so we work with a lot of movers. Matt has been a treasure in the PA / NY area. He has helped us on numerous, large scale jobs that included unloading and offloading hundreds of pieces of furniture; many requiring on-site assembly. We are in our second year of working with Matt and would recommend him highly for commercial or residential moving jobs.",
   }, // [5]
   {
-    name: "Madison Cheers",
-    stars: "Recommends",
-    date: "Dec 18, 2024",
+    name: "Lacie Zender",
+    stars: 5,
+    date: "2026-03-01",
     review:
-      "MANN MUSCLES have you on Muscle!!! 💪 they were in and out with a side of stand up comedy best moving experience ever! ~ Madison & Mike",
-  }, // [6]
+      "Kind, courteous & professional. Matt & his team go above and beyond to facilitate your needs and make sure you have everything completed in a timely manner.",
+  },
   {
-    name: "Kristin Caudullo Martelli",
-    stars: "Recommends",
-    date: "Sep 10, 2024",
+    name: "Emma Siggins",
+    stars: 5,
+    date: "2026-03-05",
     review:
-      "These guys are AWESOME! Professional, courteous, super amazing job well done with smiles on their faces. I would give them 10 stars. HIGHLY recommend.",
-  }, // [6]
+      "I have recently used Mann Muscles LLC move me again. They were efficient and reasonably priced. Matt and his crew did an awesome job. I would give them 10 stars out of 10 if I could.",
+  },
   {
-    name: "Michele Kaminski",
-    stars: "Recommends",
-    date: "May 28, 2024",
+    name: "Andrea Voglino",
+    stars: 5,
+    date: "2026-03-10",
     review:
-      "I have used Mann Muscles three times. They are incredible courteous, professional, best customer service. Can't recommend them enough. If moving thet are your go to movers !!!",
-  }, // [6]
+      "Amazing all around! Does great work, fast, reliable, reasonably priced, friendly! 100% satisfied",
+  },
   {
-    name: "Jacob W Rosenstein",
-    stars: "Recommends",
-    date: "Dec 27, 2023",
-    review: "Recommends Mann Muscles LLC.",
-  }, // [6]
+    name: "Michael Bryant",
+    stars: 5,
+    date: "2026-03-15",
+    review:
+      "I delt with this guy. Didn't know him from a hole in a wall but he treated me like he knew me for over 20 years and gave me an outstandingly fairly price and him and his crew did everything they said they would do and more. I Highly Recommend this service!",
+  },
   {
     name: "Deborah Shope",
     stars: 5,

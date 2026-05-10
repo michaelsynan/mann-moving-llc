@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
   try {
     const result = await resend.emails.send({
       from: "Mann Muscles LLC <no-reply@formworkstudios.xyz>",
-      to: ["hello@formworkstudios.com"],
+      to: ["mannmuscles@gmail.com"],
       bcc: ["mikesynan@gmail.com"],
       subject: `New ${service} Request from ${name}`,
       html: `

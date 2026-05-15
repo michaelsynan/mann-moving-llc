@@ -1007,7 +1007,17 @@ function onServiceDateClick(event: MouseEvent) {
       </div>
     </template>
 
+    <UAlert
+      v-if="submitSuccess"
+      color="success"
+      variant="subtle"
+      title="Request submitted"
+      description="Thanks! Your junk removal request has been submitted. We'll reach out soon."
+      icon="i-lucide-check"
+    />
+
     <UForm
+      v-else
       :state="state"
       :validate="validate"
       @submit="onSubmit"
@@ -1027,16 +1037,6 @@ function onServiceDateClick(event: MouseEvent) {
           autocomplete="off"
         >
       </div>
-      <UAlert
-        v-if="submitSuccess"
-        color="success"
-        variant="subtle"
-        class="mb-4"
-        title="Request submitted"
-        description="Thanks! Your junk removal request has been submitted. We'll reach out soon."
-        icon="i-lucide-check"
-      />
-
       <UAlert
         v-if="submitError"
         color="error"

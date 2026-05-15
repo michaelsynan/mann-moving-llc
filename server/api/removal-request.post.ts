@@ -230,7 +230,20 @@ export default defineEventHandler(async (event) => {
         await import("../utils/s3");
 
       const s3 = getS3Client(s3Config);
+      if (!s3) {
+        console.warn("S3 upload skipped: missing/invalid S3 config", {
+          region: String(s3Config.region ?? "").trim() || undefined,
+          bucket: String(s3Config.bucket ?? "").trim() || undefined,
+          hasEndpoint: Boolean(String(s3Config.endpoint ?? "").trim()),
+          attachments: attachments.length,
+        });
+      }
       if (s3) {
+        console.info("S3 upload starting", {
+          bucket: s3.bucket,
+          region: String(s3Config.region ?? "").trim() || undefined,
+          attachments: attachments.length,
+        });
         const submittedDate = new Date().toISOString().slice(0, 10);
         const suffix = randomUUID().slice(0, 8);
 
@@ -239,6 +252,7 @@ export default defineEventHandler(async (event) => {
 
         const prefix = `removal-requests/${safeService}/${safeName}/${submittedDate}-${suffix}/`;
         s3Prefix = prefix;
+        console.info("S3 upload prefix", { prefix });
 
         const uploaded: Array<{ name: string; key: string; url: string }> = [];
         for (const [index, attachment] of attachments.entries()) {

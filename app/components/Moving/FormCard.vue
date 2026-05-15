@@ -497,7 +497,17 @@ async function onSubmit() {
       </div>
     </template>
 
+    <UAlert
+      v-if="submitSuccess"
+      color="success"
+      variant="subtle"
+      title="Request submitted"
+      description="Thanks! Your moving request has been submitted. We'll reach out soon."
+      icon="i-lucide-check"
+    />
+
     <UForm
+      v-else
       :state="state"
       :validate="validate"
       @submit="onSubmit"
@@ -517,16 +527,6 @@ async function onSubmit() {
           autocomplete="off"
         >
       </div>
-      <UAlert
-        v-if="submitSuccess"
-        color="success"
-        variant="subtle"
-        class="mb-4"
-        title="Request submitted"
-        description="Thanks! Your moving request has been submitted. We'll reach out soon."
-        icon="i-lucide-check"
-      />
-
       <UAlert
         v-if="submitError"
         color="error"

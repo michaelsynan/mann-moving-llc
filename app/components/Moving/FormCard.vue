@@ -57,6 +57,19 @@ const movingSubmittedAt = useCookie<string | undefined>(DUPLICATE_STORAGE_KEY, {
 
 const hasRecentSubmission = computed(() => Boolean(movingSubmittedAt.value))
 
+const allowDuplicateSubmissions = computed(() => import.meta.dev)
+
+const shouldBlockDuplicateSubmission = computed(() => {
+  return hasRecentSubmission.value && !allowDuplicateSubmissions.value
+})
+
+const duplicateSubmitDescription = computed(() => {
+  if (allowDuplicateSubmissions.value) {
+    return `You already uploaded [dev allowing upload]: ${duplicateSubmitMessage}`
+  }
+  return duplicateSubmitMessage
+})
+
 function describeError(err: unknown): string {
   if (err instanceof Error) {
     const anyErr = err as any
@@ -310,8 +323,28 @@ function validate(formState: typeof state) {
     }
   }
 
+  const isValidZip = (value: string) => {
+    const zip = value.trim()
+    // Accept 5-digit or ZIP+4.
+    return /^\d{5}(-\d{4})?$/.test(zip)
+  }
+
+  const validateZip = (path: string, value: string) => {
+    if (!value.trim()) {
+      errors.push({ name: path, message: 'ZIP is required' })
+      return
+    }
+
+    if (!isValidZip(value)) {
+      errors.push({ name: path, message: 'Enter a valid ZIP' })
+    }
+  }
+
   validateState('pickup.state', formState.pickup.state)
   validateState('dropoff.state', formState.dropoff.state)
+
+  validateZip('pickup.zip', formState.pickup.zip)
+  validateZip('dropoff.zip', formState.dropoff.zip)
 
   for (let index = 0; index < formState.additionalStops.length; index++) {
     validateState(`additionalStops.${index}.state`, formState.additionalStops[index]?.state ?? '')
@@ -329,7 +362,7 @@ async function onSubmit() {
   submitError.value = null
   submitSuccess.value = false
 
-  if (hasRecentSubmission.value) {
+  if (shouldBlockDuplicateSubmission.value) {
     submitError.value = duplicateSubmitMessage
     return
   }
@@ -510,7 +543,7 @@ async function onSubmit() {
         variant="subtle"
         class="mb-4"
         title="Already submitted"
-        :description="duplicateSubmitMessage"
+        :description="duplicateSubmitDescription"
         icon="i-lucide-info"
       />
 
@@ -633,7 +666,7 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          label="ZIP"
+          label="ZIP *"
           name="pickup.zip"
           size="lg"
         >
@@ -706,7 +739,7 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          label="ZIP"
+          label="ZIP *"
           name="dropoff.zip"
           size="lg"
         >
@@ -994,7 +1027,7 @@ async function onSubmit() {
           color="primary"
           size="xl"
           :loading="isSubmitting"
-          :disabled="isSubmitting || hasRecentSubmission"
+          :disabled="isSubmitting || shouldBlockDuplicateSubmission"
           class="w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >Request a quote</UButton>
       </div>

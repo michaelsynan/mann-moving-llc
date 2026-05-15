@@ -40,6 +40,19 @@ export default defineNuxtConfig({
       secretKey: env.NUXT_TURNSTILE_SECRET_KEY || env.TURNSTILE_SECRET_KEY,
     },
 
+    // Optional: AWS S3 uploads (for junk-removal photos).
+    // These are server-only secrets.
+    s3: {
+      region: env.S3_REGION,
+      bucket: env.S3_BUCKET,
+      accessKeyId: env.S3_ACCESS_KEY_ID,
+      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+      // Optional (advanced): custom S3 endpoint (e.g. for localstack / S3-compatible providers)
+      endpoint: env.S3_ENDPOINT,
+      // Pre-signed GET URL expiry (seconds). Default: 7 days. Max: 7 days.
+      presignedUrlExpiresSeconds: env.S3_PRESIGNED_URL_EXPIRES_SECONDS,
+    },
+
     // Optional: email-to-SMS gateway recipient (e.g. Verizon: 10digits@vtext.com)
     contactSmsTo: env.NUXT_CONTACT_SMS_TO || env.CONTACT_SMS_TO,
   },

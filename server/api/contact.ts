@@ -67,6 +67,7 @@ export default defineEventHandler(async (event) => {
       from: "Mann Muscles LLC <no-reply@formworkstudios.xyz>",
       to: ["mannmuscles@gmail.com"],
       bcc: ["mikesynan@gmail.com"],
+      reply_to: email,
       subject: `New ${service} Request from ${name}`,
       html: `
       <h2>New ${escapeHtml(service)} Request</h2>

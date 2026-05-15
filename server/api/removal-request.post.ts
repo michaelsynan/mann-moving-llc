@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import { ofetch } from "ofetch";
+
 export default defineEventHandler(async (event) => {
   if (getMethod(event) !== "POST") {
     setResponseStatus(event, 405);
@@ -94,7 +97,7 @@ export default defineEventHandler(async (event) => {
   let turnstileResult: { success: boolean; "error-codes"?: string[] } | null =
     null;
   try {
-    turnstileResult = await $fetch(
+    turnstileResult = await ofetch(
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
       {
         method: "POST",
@@ -160,8 +163,14 @@ export default defineEventHandler(async (event) => {
     };
   }
 
+  type Attachment = {
+    filename: string;
+    content: Buffer;
+    contentType: string | undefined;
+  };
+
   const attachments = photos
-    .map((p) => {
+    .map((p): Attachment | null => {
       const data = p.data as unknown;
       const content =
         typeof Buffer !== "undefined" && Buffer.isBuffer(data)
@@ -177,17 +186,101 @@ export default defineEventHandler(async (event) => {
       return {
         filename: p.filename as string,
         content,
+        contentType: typeof p.type === "string" ? p.type : undefined,
       };
     })
-    .filter(Boolean) as Array<{ filename: string; content: Buffer }>;
+    .filter((a): a is Attachment => a !== null);
 
   const resend = useResend();
 
   try {
+    let s3Prefix: string | null = null;
+    let s3Uploads: Array<{ name: string; key: string; url: string }> | null =
+      null;
+
+    const slugify = (value: string): string => {
+      return String(value ?? "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80);
+    };
+
+    const safeKeyPart = (value: string): string => {
+      const cleaned = String(value ?? "")
+        .replace(/[^a-zA-Z0-9._\-]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 120);
+      return cleaned || "file";
+    };
+
+    const s3Config = (config as any)?.s3 as
+      | {
+          region?: string;
+          bucket?: string;
+          accessKeyId?: string;
+          secretAccessKey?: string;
+          endpoint?: string;
+          presignedUrlExpiresSeconds?: string | number;
+        }
+      | undefined;
+
+    if (attachments.length && s3Config) {
+      const { getS3Client, getPresignedViewUrl, uploadBufferToS3 } =
+        await import("../utils/s3");
+
+      const s3 = getS3Client(s3Config);
+      if (s3) {
+        const submittedDate = new Date().toISOString().slice(0, 10);
+        const suffix = randomUUID().slice(0, 8);
+
+        const safeService = slugify(service) || "junk-removal";
+        const safeName = slugify(name) || "customer";
+
+        const prefix = `removal-requests/${safeService}/${safeName}/${submittedDate}-${suffix}/`;
+        s3Prefix = prefix;
+
+        const uploaded: Array<{ name: string; key: string; url: string }> = [];
+        for (const [index, attachment] of attachments.entries()) {
+          const numbered = String(index + 1).padStart(2, "0");
+          const filename = safeKeyPart(attachment.filename);
+          const key = `${prefix}${numbered}-${filename}`;
+
+          try {
+            await uploadBufferToS3({
+              client: s3.client,
+              bucket: s3.bucket,
+              key,
+              buffer: attachment.content,
+              contentType: attachment.contentType,
+            });
+
+            const url = await getPresignedViewUrl({
+              client: s3.client,
+              bucket: s3.bucket,
+              key,
+              expiresInSeconds: s3.presignedUrlExpiresSeconds,
+            });
+
+            uploaded.push({ name: attachment.filename, key, url });
+          } catch (error) {
+            console.error(
+              "S3 upload failed for",
+              attachment.filename,
+              error instanceof Error ? error.message : error,
+            );
+          }
+        }
+
+        s3Uploads = uploaded.length ? uploaded : null;
+      }
+    }
+
     const result = await resend.emails.send({
       from: "Mann Muscles LLC <no-reply@formworkstudios.xyz>",
-      to: ["hello@formworkstudios.com"],
+      to: ["mannmuscles@gmail.com"],
       bcc: ["mikesynan@gmail.com"],
+      reply_to: email,
       subject: `New ${service} Request from ${name}`,
       attachments: attachments.length ? attachments : undefined,
       html: `
@@ -200,6 +293,22 @@ export default defineEventHandler(async (event) => {
         <p><strong>Message:</strong></p>
         <pre style="white-space:pre-wrap;word-break:break-word">${escapeHtml(message)}</pre>
         ${attachments.length ? `<p><strong>Photos attached:</strong> ${attachments.length}</p>` : "<p><strong>Photos:</strong> None</p>"}
+        ${
+          s3Uploads?.length
+            ? `
+          <hr />
+          <p><strong>Photos uploaded to S3 (pre-signed links):</strong></p>
+          <ul>
+            ${s3Uploads
+              .map(
+                (u) =>
+                  `<li><a href="${escapeHtml(u.url)}">${escapeHtml(u.name)}</a></li>`,
+              )
+              .join("\n")}
+          </ul>
+        `
+            : ""
+        }
       `,
       text: `
 New ${service} Request
@@ -214,10 +323,16 @@ Message:
 ${message}
 
 Photos attached: ${attachments.length}
+${s3Uploads?.length ? `\nS3 uploads (pre-signed links):\n${s3Uploads.map((u) => `- ${u.name}: ${u.url}`).join("\n")}` : ""}
       `.trim(),
     });
 
-    return { status: "sent", result };
+    return {
+      status: "sent",
+      result,
+      s3Prefix,
+      s3Uploads,
+    };
   } catch (error) {
     setResponseStatus(event, 500);
     return {

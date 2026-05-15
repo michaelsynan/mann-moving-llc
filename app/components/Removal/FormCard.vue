@@ -27,6 +27,19 @@ const removalSubmittedAt = useCookie<string | undefined>(DUPLICATE_STORAGE_KEY, 
 
 const hasRecentSubmission = computed(() => Boolean(removalSubmittedAt.value))
 
+const allowDuplicateSubmissions = computed(() => import.meta.dev)
+
+const shouldBlockDuplicateSubmission = computed(() => {
+  return hasRecentSubmission.value && !allowDuplicateSubmissions.value
+})
+
+const duplicateSubmitDescription = computed(() => {
+  if (allowDuplicateSubmissions.value) {
+    return `You already uploaded [dev allowing upload]: ${duplicateSubmitMessage}`
+  }
+  return duplicateSubmitMessage
+})
+
 function markRemovalSubmission() {
   const timestamp = new Date().toISOString()
   removalSubmittedAt.value = timestamp
@@ -802,7 +815,7 @@ async function onSubmit() {
   submitError.value = null
   submitSuccess.value = false
 
-  if (hasRecentSubmission.value) {
+  if (shouldBlockDuplicateSubmission.value) {
     submitError.value = duplicateSubmitMessage
     return
   }
@@ -1040,7 +1053,7 @@ function onServiceDateClick(event: MouseEvent) {
         variant="subtle"
         class="mb-4"
         title="Already submitted"
-        :description="duplicateSubmitMessage"
+        :description="duplicateSubmitDescription"
         icon="i-lucide-info"
       />
 
@@ -1287,7 +1300,7 @@ function onServiceDateClick(event: MouseEvent) {
           color="primary"
           size="xl"
           :loading="isSubmitting"
-          :disabled="isSubmitting || hasRecentSubmission"
+          :disabled="isSubmitting || shouldBlockDuplicateSubmission"
           class="w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
           Request a quote

@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   robots: {
     groups: [
       {
-        userAgent: ["facebookexternalhit", "Facebot"],
+        userAgent: ["facebookexternalhit", "Facebot", "Twitterbot", "LinkedInBot"],
         allow: "/",
       },
       {

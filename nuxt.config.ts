@@ -16,6 +16,19 @@ export default defineNuxtConfig({
     "nuxt-og-image",
   ],
 
+  robots: {
+    groups: [
+      {
+        userAgent: ["facebookexternalhit", "Facebot"],
+        allow: "/",
+      },
+      {
+        userAgent: ["*"],
+        allow: "/",
+      },
+    ],
+  },
+
   resend: {
     apiKey: env.NUXT_RESEND_API_KEY || env.RESEND_API_KEY,
   },

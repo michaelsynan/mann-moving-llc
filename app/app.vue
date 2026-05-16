@@ -19,13 +19,16 @@ useHead({
 const title = 'Mann Muscles LLC - Junk Removal & Moving Services'
 const description = 'We will cut your junk removal costs with Mann Muscles LLC. We buy your junk and keep it out of the landfill. Our team makes it stress-free.'
 
+defineOgImage('MannOgImage.takumi', {
+  title: 'Mann Muscles LLC',
+  description: 'Top Rated Junk Removal and Moving Services in NEPA.'
+})
+
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
   twitterCard: 'summary_large_image'
 })
 </script>

@@ -12,6 +12,8 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@nuxtjs/supabase",
     "nuxt-resend",
+    "@nuxtjs/seo",
+    "nuxt-og-image",
   ],
 
   resend: {
@@ -24,6 +26,8 @@ export default defineNuxtConfig({
       mode: "out-in",
     },
   },
+  site: { url: "https://www.mannmuscles.com/", name: "Mann Muscles LLC" },
+
   turnstile: {
     // Turnstile site key is intentionally public (it is embedded in the browser).
     // We support a non-"KEY" env var name to avoid some host UIs warning about it.

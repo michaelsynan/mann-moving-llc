@@ -59,7 +59,7 @@ const videos = [
     <div class="mt-16 flex w-full justify-center">
       <UButton
         label="Leave a Review"
-        to="https://www.facebook.com/MannMuscles/reviews/?id=100063722133622&sk=reviews"
+        to="https://g.page/r/CbI1rsoGJFonEAE/review"
         target="_blank"
         rel="noopener noreferrer"
         trailing-icon="i-lucide-arrow-right"

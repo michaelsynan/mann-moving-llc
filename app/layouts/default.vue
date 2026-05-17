@@ -167,6 +167,19 @@ const footerSocials = [
             © {{ new Date().getFullYear() }} Mann Muscles LLC
           </p>
         </div>
+
+        <div class="text-center">
+          <p class="text-sm text-muted">
+            Website by
+            <NuxtLink
+              to="https://formworkstudios.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+            >Formwork Studios</NuxtLink>
+          </p>
+        </div>
+
       </div>
     </UFooter>
   </div>

@@ -549,10 +549,10 @@ async function onSubmit() {
         icon="i-lucide-info"
       />
 
-        <div
-          class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-          :class="isSubmissionLocked ? 'pointer-events-none opacity-60' : ''"
-        >
+      <div
+        class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        :class="isSubmissionLocked ? 'pointer-events-none opacity-60' : ''"
+      >
         <UFormField
           label="Name *"
           name="name"

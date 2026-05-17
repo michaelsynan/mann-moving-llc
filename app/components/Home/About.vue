@@ -46,8 +46,9 @@
         <div class="mt-6 flex w-full justify-center">
           <UButton
             label="Get in Touch"
-            to="tel:"
+            href="tel:+15702678864"
             icon="i-mdi-phone"
+            aria-label="Call 1-570-267-8864"
             size="xl"
             color="primary"
             variant="solid"

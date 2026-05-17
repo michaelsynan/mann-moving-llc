@@ -62,11 +62,15 @@ export default defineEventHandler(async (event) => {
     return { status: "error", error: "Missing required fields" };
   }
 
+  const isProduction = process.env.NODE_ENV === "production";
+  const emailTo = isProduction ? ["mannmuscles@gmail.com"] : ["mikesynan@gmail.com"];
+  const emailBcc = isProduction ? ["mikesynan@gmail.com"] : undefined;
+
   try {
     const result = await resend.emails.send({
       from: "Mann Muscles LLC <no-reply@formworkstudios.xyz>",
-      to: ["mannmuscles@gmail.com"],
-      bcc: ["mikesynan@gmail.com"],
+      to: emailTo,
+      bcc: emailBcc,
       reply_to: email,
       subject: `New ${service} Request from ${name}`,
       html: `

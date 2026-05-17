@@ -15,7 +15,7 @@
               name="i-mdi-dump-truck"
               class="marquee__icon text-primary"
             />
-            <span>Get Paid for Your Junk</span>
+            <span>Discount Your Junk Removal Bill</span>
           </div>
           <div class="marquee__item">
             <UIcon

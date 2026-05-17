@@ -70,6 +70,8 @@ const duplicateSubmitDescription = computed(() => {
   return duplicateSubmitMessage
 })
 
+const isSubmissionLocked = computed(() => hasRecentSubmission.value && !submitSuccess.value)
+
 function describeError(err: unknown): string {
   if (err instanceof Error) {
     const anyErr = err as any
@@ -362,7 +364,7 @@ async function onSubmit() {
   submitError.value = null
   submitSuccess.value = false
 
-  if (shouldBlockDuplicateSubmission.value) {
+  if (hasRecentSubmission.value) {
     submitError.value = duplicateSubmitMessage
     return
   }
@@ -515,7 +517,7 @@ async function onSubmit() {
     >
       <div
         aria-hidden="true"
-        class="sr-only"
+        class="hidden"
       >
         <label for="mm-website">Website</label>
         <input
@@ -547,7 +549,10 @@ async function onSubmit() {
         icon="i-lucide-info"
       />
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          :class="isSubmissionLocked ? 'pointer-events-none opacity-60' : ''"
+        >
         <UFormField
           label="Name *"
           name="name"
@@ -1027,7 +1032,7 @@ async function onSubmit() {
           color="primary"
           size="xl"
           :loading="isSubmitting"
-          :disabled="isSubmitting || shouldBlockDuplicateSubmission"
+          :disabled="isSubmitting || isSubmissionLocked"
           class="w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >Request a quote</UButton>
       </div>

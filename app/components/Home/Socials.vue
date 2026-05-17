@@ -8,11 +8,11 @@ const socials = [
     icon: 'i-mdi-facebook',
     href: 'https://www.facebook.com/MannMuscles/'
   },
-  {
-    label: 'TikTok',
-    icon: 'i-simple-icons-tiktok',
-    href: '/'
-  },
+  // {
+  //   label: 'TikTok',
+  //   icon: 'i-simple-icons-tiktok',
+  //   href: '/'
+  // },
   {
     label: 'Yelp',
     icon: 'i-mdi-yelp',
@@ -30,7 +30,28 @@ const socials = [
   }
 ] as const
 
+const videoPosterUrl = '/videos/posters/Ad_web.jpg'
+const videoSrcUrl = '/videos/Ad_web.mp4'
+
+// Rollback (previous):
+// const videoPosterUrl = '/videos/posters/vid_web.jpg'
+// const videoSrcUrl = '/videos/vid_web.mp4'
+
+const isTwoByTwoOnDesktop = socials.length === 4
+
+function desktopGridColsClass() {
+  return isTwoByTwoOnDesktop ? 'sm:grid-cols-2' : 'sm:grid-cols-6'
+}
+
+function desktopItemSpanClass() {
+  return isTwoByTwoOnDesktop ? 'sm:col-span-1' : 'sm:col-span-2'
+}
+
 function gridPositionClass(index: number) {
+  if (isTwoByTwoOnDesktop) {
+    return ''
+  }
+
   // On `sm+`, we use a 6-column grid and each item spans 2 columns.
   // This lets us truly center leftovers:
   // remainder 1 -> start at col 3 (occupies cols 3-4)
@@ -61,10 +82,10 @@ function mobileGridPositionClass(index: number) {
           controls
           playsinline
           preload="metadata"
-          poster="/videos/posters/vid_web.jpg"
+          :poster="videoPosterUrl"
         >
           <source
-            src="/videos/vid_web.mp4"
+            :src="videoSrcUrl"
             type="video/mp4"
           >
           Your browser does not support the video tag.
@@ -75,7 +96,10 @@ function mobileGridPositionClass(index: number) {
         FOLLOW US
       </h2>
 
-      <div class="mt-8 grid grid-cols-1 sm:grid-cols-6 gap-3 justify-items-stretch">
+      <div
+        class="mt-8 grid grid-cols-1 gap-3 justify-items-stretch"
+        :class="desktopGridColsClass()"
+      >
         <a
           v-for="(social, index) in socials"
           :key="social.label"
@@ -86,7 +110,7 @@ function mobileGridPositionClass(index: number) {
             'inline-flex items-center justify-center gap-3 rounded-lg px-5 py-3 text-base font-semibold w-full',
             'text-highlighted ring ring-inset ring-primary bg-muted hover:bg-elevated active:bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
             mobileGridPositionClass(index),
-            'sm:col-span-2',
+            desktopItemSpanClass(),
             gridPositionClass(index)
           ]"
         >

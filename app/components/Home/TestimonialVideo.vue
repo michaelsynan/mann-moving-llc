@@ -12,6 +12,10 @@ const videos = [
     poster: '/videos/posters/cleanout_web.jpg',
   },
   {
+    src: '/videos/Shed_demo_and_cleanout_web.mp4',
+    poster: '/videos/posters/Shed_demo_and_cleanout_web.jpg',
+  },
+  {
     src: '/videos/JunkRemovalNEW30sec_web.mp4',
     poster: '/videos/posters/JunkRemovalNEW30sec_web.jpg',
   },
@@ -30,22 +34,26 @@ const videos = [
       </h2>
     </div>
 
-    <div class="flex flex-col gap-4 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-center overflow-x-hidden">
-      <video
+    <div class="testimonial-videos overflow-x-hidden">
+      <div
         v-for="video in videos"
         :key="video.src"
-        class="testimonial-video block w-full h-auto rounded-lg border border-default bg-muted sm:w-auto"
-        controls
-        playsinline
-        preload="metadata"
-        :poster="video.poster"
+        class="testimonial-video-item"
       >
-        <source
-          :src="video.src"
-          type="video/mp4"
+        <video
+          class="testimonial-video block rounded-lg border border-default bg-muted"
+          controls
+          playsinline
+          preload="metadata"
+          :poster="video.poster"
         >
-        Your browser does not support the video tag.
-      </video>
+          <source
+            :src="video.src"
+            type="video/mp4"
+          >
+          Your browser does not support the video tag.
+        </video>
+      </div>
     </div>
 
     <div class="mt-16 flex w-full justify-center">
@@ -65,11 +73,54 @@ const videos = [
 </template>
 
 <style scoped>
+.testimonial-videos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.testimonial-video-item {
+  display: flex;
+  justify-content: center;
+}
+
 @media (min-width: 640px) {
+  .testimonial-videos {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .testimonial-video-item {
+    flex: 0 0 calc(50% - 0.75rem);
+    height: clamp(240px, 32vw, 380px);
+    align-items: stretch;
+  }
+
   .testimonial-video {
-    height: clamp(240px, 26vw, 500px);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+@media (min-width: 1024px) {
+  .testimonial-videos {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .testimonial-video-item {
+    flex: 0 1 auto;
+    height: auto;
+  }
+
+  .testimonial-video {
+    height: clamp(220px, 18vw, 320px);
     width: auto;
-    max-width: none;
+    max-width: 100%;
+    object-fit: contain;
   }
 }
 </style>

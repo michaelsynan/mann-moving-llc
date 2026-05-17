@@ -244,11 +244,11 @@ const footerSocials = [
     icon: 'i-mdi-facebook',
     href: 'https://www.facebook.com/MannMuscles/'
   },
-  {
-    label: 'TikTok',
-    icon: 'i-simple-icons-tiktok',
-    href: '/'
-  },
+  // {
+  //   label: 'TikTok',
+  //   icon: 'i-simple-icons-tiktok',
+  //   href: '/'
+  // },
   {
     label: 'Yelp',
     icon: 'i-mdi-yelp',

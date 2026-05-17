@@ -40,6 +40,8 @@ const duplicateSubmitDescription = computed(() => {
   return duplicateSubmitMessage
 })
 
+const isSubmissionLocked = computed(() => hasRecentSubmission.value && !submitSuccess.value)
+
 function markRemovalSubmission() {
   const timestamp = new Date().toISOString()
   removalSubmittedAt.value = timestamp
@@ -815,7 +817,7 @@ async function onSubmit() {
   submitError.value = null
   submitSuccess.value = false
 
-  if (shouldBlockDuplicateSubmission.value) {
+  if (hasRecentSubmission.value) {
     submitError.value = duplicateSubmitMessage
     return
   }
@@ -1025,7 +1027,7 @@ function onServiceDateClick(event: MouseEvent) {
     >
       <div
         aria-hidden="true"
-        class="sr-only"
+        class="hidden"
       >
         <label for="mm-removal-website">Website</label>
         <input
@@ -1057,7 +1059,10 @@ function onServiceDateClick(event: MouseEvent) {
         icon="i-lucide-info"
       />
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div
+        class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        :class="isSubmissionLocked ? 'pointer-events-none opacity-60' : ''"
+      >
         <UFormField
           label="Name *"
           name="name"
@@ -1300,7 +1305,7 @@ function onServiceDateClick(event: MouseEvent) {
           color="primary"
           size="xl"
           :loading="isSubmitting"
-          :disabled="isSubmitting || shouldBlockDuplicateSubmission"
+          :disabled="isSubmitting || isSubmissionLocked"
           class="w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
           Request a quote

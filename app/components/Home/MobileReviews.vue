@@ -160,7 +160,7 @@ function onPointerUp(event: PointerEvent) {
     <div class="mt-6 w-svw mx-[calc(50%-50svw)] px-4 sm:px-6">
       <div
         ref="scroller"
-        class="review-scroller no-scrollbar -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"
+        class="review-scroller no-scrollbar -mx-4 sm:-mx-6 px-5 sm:px-5 overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"
         :class="isDragging ? 'cursor-grabbing' : 'cursor-grab'"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
@@ -223,6 +223,7 @@ function onPointerUp(event: PointerEvent) {
 <style scoped>
 .review-scroller {
   -webkit-overflow-scrolling: touch;
+  scroll-padding-inline: 1.25rem;
 }
 
 .no-scrollbar {

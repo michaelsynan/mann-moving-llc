@@ -8,7 +8,7 @@
   <div class="space-y-6">
     <div class="relative rounded-lg border border-default overflow-hidden">
       <NuxtImg
-        src="/mann-group.jpg"
+        src="/mann-group.png"
         alt="Mann Muscles LLC crew group photo"
         class="block w-full h-auto"
         loading="lazy"

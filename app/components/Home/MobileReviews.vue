@@ -157,7 +157,7 @@ function onPointerUp(event: PointerEvent) {
       </div>
     </div>
 
-    <div class="mt-6 w-svw mx-[calc(50%-50svw)] px-4 sm:px-6">
+    <div class="mt-6 -mx-4 w-[calc(100%+2rem)] px-4 sm:-mx-6 sm:w-[calc(100%+3rem)] sm:px-6 lg:-mx-8 lg:w-[calc(100%+4rem)] lg:px-8">
       <div
         ref="scroller"
         class="review-scroller no-scrollbar -mx-4 sm:-mx-6 px-5 sm:px-5 overflow-x-auto select-none snap-x snap-mandatory overscroll-x-contain"

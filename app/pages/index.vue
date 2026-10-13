@@ -28,9 +28,9 @@ definePageMeta({
     >
 
     <div class="relative z-10">
-      <div class="w-svw mx-[calc(50%-50svw)]">
+      <div class="w-[calc(100%+2rem)] -mx-4 sm:w-[calc(100%+3rem)] sm:-mx-6 lg:w-[calc(100%+4rem)] lg:-mx-8">
         <section
-          class="relative isolate flex min-h-svh flex-col -mt-(--ui-header-height)  bg-[url('/best-moving-company.png')] bg-fixed bg-cover bg-center bg-no-repeat"
+          class="relative isolate flex min-h-svh max-h-svh flex-col -mt-(--ui-header-height) bg-[url('/best-moving-company.png')] bg-fixed bg-cover bg-center bg-no-repeat md:max-h-none"
         >
           <div
             aria-hidden="true"
@@ -38,26 +38,26 @@ definePageMeta({
           />
 
           <div
-            class="relative z-20 mx-auto flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center pt-[calc(var(--ui-header-height)+2.5rem)] pb-32 sm:pb-36 lg:pb-40"
+            class="relative z-20 mx-auto flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center pt-[calc(var(--ui-header-height)+1rem)] pb-24 sm:pt-[calc(var(--ui-header-height)+2.5rem)] sm:pb-36 lg:px-8 lg:pb-40"
           >
             <div class="w-full">
               <div class="flex justify-center">
                 <AppLogo class="w-full max-w-4xl h-auto" />
               </div>
 
-              <div class="mx-auto mt-6 max-w-3xl text-center">
-                <h1 class="text-4xl! md:text-6xl! font-black! leading-tight tracking-tight text-highlighted uppercase">
+              <div class="mx-auto mt-3 max-w-3xl text-center sm:mt-6">
+                <h1 class="text-3xl! sm:text-4xl! md:text-6xl! font-black! leading-tight tracking-tight text-highlighted uppercase">
                   WE ARE CHANGING THE JUNK REMOVAL INDUSTRY
                 </h1>
 
-                <p class="mt-4 text-xl md:text-2xl text-muted ">
+                <p class="mt-3 text-base text-muted sm:mt-4 sm:text-xl md:text-2xl">
                   We will cut your junk removal costs with Mann Muscles LLC. We discount your bill for valuables we can
                   re-home and keep it out of the
                   landfill.
                   Our team makes it stress-free.
                 </p>
 
-                <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <div class="mt-5 flex flex-col items-center justify-center gap-2 sm:mt-8 sm:flex-row sm:gap-3">
                   <UButton
                     label="Junk Removal"
                     to="/junk-removal"
@@ -65,7 +65,7 @@ definePageMeta({
                     size="xl"
                     color="primary"
                     variant="solid"
-                    class="w-full sm:w-auto px-8 py-4 text-base sm:text-lg"
+                    class="w-full px-6 py-3 text-base sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
                   />
                   <UButton
                     label="Moving Help"
@@ -74,7 +74,7 @@ definePageMeta({
                     size="xl"
                     color="neutral"
                     variant="subtle"
-                    class="w-full sm:w-auto px-8 py-4 text-base sm:text-lg"
+                    class="w-full px-6 py-3 text-base sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
                   />
                 </div>
               </div>

@@ -28,7 +28,7 @@ definePageMeta({
     >
 
     <div class="relative z-10">
-      <div class="w-[calc(100%+2rem)] -mx-4 sm:w-[calc(100%+3rem)] sm:-mx-6 lg:w-[calc(100%+4rem)] lg:-mx-8">
+      <div class="w-full sm:w-[calc(100%+3rem)] sm:-mx-6 lg:w-[calc(100%+4rem)] lg:-mx-8">
         <section
           class="relative isolate flex min-h-svh max-h-svh flex-col -mt-(--ui-header-height) bg-[url('/best-moving-company.png')] bg-fixed bg-cover bg-center bg-no-repeat md:max-h-none"
         >
@@ -38,7 +38,7 @@ definePageMeta({
           />
 
           <div
-            class="relative z-20 mx-auto flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center pt-[calc(var(--ui-header-height)+1rem)] pb-24 sm:pt-[calc(var(--ui-header-height)+2.5rem)] sm:pb-36 lg:px-8 lg:pb-40"
+            class="relative z-20 mx-auto flex-1 min-h-0 w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center pt-[calc(var(--ui-header-height)+1rem)] pb-24 sm:pt-[calc(var(--ui-header-height)+2.5rem)] sm:pb-36 lg:px-8 lg:pb-40"
           >
             <div class="w-full">
               <div class="flex justify-center">
